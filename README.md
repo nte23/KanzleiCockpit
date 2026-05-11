@@ -1,30 +1,47 @@
 # KanzleiCockpit · UI Preview
 
-Statische UI-Vorschau für KanzleiCockpit. Zeigt 11 Feature-Screens
+Statische UI-Vorschau für KanzleiCockpit. 14 Feature-Screens
 nacheinander, jeder mit kurzer Erklärung darüber. Keine Marketing-Page.
 
 ## Screens
 
-1. **Datev-Import & Mapping** — Wizard mit Sachkonten-Zuordnung, Parser-Status.
-2. **Executive Cockpit** — KPIs, 12-Mt-Trend, Alerts.
-3. **Abteilungs-Analyse** — Umsatz vs. Kosten, Stunden, Drilldown per Klick.
-4. **Anwalts-Matrix** — Sankey Associate→Partner, Top-Biller, Auslastung×Realization.
-5. **Anwalts-Profil** — Stunden, Mandanten-Anteil, offene Akten.
-6. **Mandanten-Liste** — Sortier- &amp; filterbare Tabelle mit Sparkline-Trends.
-7. **Mandanten-Detail** — 24-Mt-Trend, Soll/Haben, OPOS-Aging, Team, Akten.
-8. **Geografische Verteilung** — Weltkarte mit YoY-Farbcodierung, Länder-Ranking.
-9. **Neuaufträge & Pipeline** — Trend, Quelle, Funnel, heißeste Leads.
-10. **Buchungs-Stream** — Live-Buchungssatz-Tabelle, Tagesfluss, OPOS-Aging.
-11. **Quartals-Briefing** — PDF-Vorlagen-Vorschau (Cover + Innenseite).
+1. **Buchhaltungs-Import &amp; Konten-Mapping** — Wizard mit Quellen-Selektor (DATEV, Lexware, Addison, Stotax, SAP B1, Generic CSV).
+2. **Executive Cockpit** — KPIs, 12-Mt-Trend, Top-Mandanten, Alerts.
+3. **Kosten-Struktur** — Personal / Wachstums-Investment (Marketing, Reisen, Fortbildung) / Run (Raum, IT, Versich., AfA) / durchlaufende Posten.
+4. **Abteilungs-Analyse** — Drilldown per Klick.
+5. **Anwalts-Matrix** — Sankey, Top-Biller, Auslastung×Realization.
+6. **Anwalts-Profil** — Stunden, Mandanten-Anteil, offene Akten.
+7. **Mandanten-Liste** — sortier- &amp; filterbare Tabelle mit Sparkline-Trends.
+8. **Mandanten-Detail** — 24-Mt-Trend, Soll/Haben, OPOS-Aging, Team, Akten.
+9. **Geografische Verteilung** — Weltkarte + Länder-Ranking.
+10. **Neuaufträge &amp; Pipeline** — Trend, Quelle, Funnel, heißeste Leads.
+11. **Marketing &amp; Akquise-ROI** — Kanal-Attribution, Konferenz-ROI, Reise→Umsatz-Korrelation.
+12. **Liquiditäts-Forecast 13 Wochen** — Bestandsverlauf, wöchentliche Flows, kritische Wochen, Stresstest.
+13. **Buchungs-Stream** — Live-Tabelle, Tagesfluss, OPOS-Aging.
+14. **Briefing-Bibliothek** — 5 PDF-Vorlagen (Quartals-Briefing, Mandanten-Onepager, Partner-Jahresgespräch, Bench-Report, Liquiditäts-Memo) — klickbar wechseln.
+
+## Was geht aus der Buchhaltung allein, was nicht
+
+**Drin (alles oben):** Umsatz/Kosten-Analyse, Mandanten- und Anwalts-Profitabilität,
+Sankey-Stundenflüsse, OPOS-Aging, Marketing-/Reise-ROI, 13-Wochen-Liquidität,
+automatische Briefings.
+
+**Mit zusätzlicher Datenquelle möglich:** Frist-Management (IPMS / Aktenverwaltung),
+Conflict-Check (Mandantenverwaltung), Pitch-Tracking (CRM), Time-to-Cash auf
+Akten-Ebene (Zeiterfassung), automatische Mandanten-Korrespondenz-Volumen
+(Outlook/Gmail).
+
+**Nicht aus der Buchhaltung:** Mandantenzufriedenheit, Skill-Matrix, Wissensstand
+der Anwälte — separate Erhebung nötig.
 
 ## Deployment (GitHub Pages)
 
 1. Repository → **Settings → Pages**
 2. Source: `Deploy from a branch`
-3. Branch der `index.html` enthält · Folder `/ (root)`
-4. Erreichbar unter `https://<user>.github.io/<repo>/`.
+3. Branch · Folder `/ (root)`
+4. Erreichbar unter `https://<user>.github.io/<repo>/`
 
-`.nojekyll` schaltet die Jekyll-Pipeline aus, sonst würde `assets/` ggf. ignoriert.
+`.nojekyll` schaltet die Jekyll-Pipeline aus.
 
 ## Lokal
 
@@ -36,15 +53,17 @@ python3 -m http.server 8000
 ## Struktur
 
 ```
-index.html         11 Sections, gemeinsame Theme.
-assets/app.js      ECharts-Charts, Tabellen-Logik, Scrollspy.
+index.html         14 Sections, gemeinsame Theme.
+assets/app.js      ECharts-Charts, Tabellen-Logik, Briefing-Templates, Scrollspy.
 .nojekyll          GitHub-Pages-Konfig.
 ```
 
-Keine Build-Schritte. Tailwind &amp; ECharts via CDN.
+Kein Build. Tailwind &amp; ECharts via CDN.
 
 ## Hinweise
 
-* Daten sind synthetisch (fiktive Kanzlei „Brenner & Voss Partner mbB").
+* Daten sind synthetisch (fiktive Kanzlei „Brenner &amp; Voss Partner mbB").
 * Weltkarten-GeoJSON wird zur Laufzeit von einem Public CDN geladen
   — schlägt der Abruf fehl, gibt es einen „Erneut versuchen"-Link.
+* Jede Section ist auf ~700 px Höhe optimiert und passt komfortabel
+  auf einen Standard-Bildschirm.

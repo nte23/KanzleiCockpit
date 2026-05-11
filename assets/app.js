@@ -1,7 +1,6 @@
 /* ============================================================
  * KanzleiCockpit – UI Preview
- * Charts und kleine Interaktionen für die 11 Screens.
- * Single-file vanilla JS. Erfordert ECharts global.
+ * 14 stacked screens, ECharts + tiny vanilla JS interactions.
  * ============================================================ */
 
 (function () {
@@ -12,48 +11,56 @@
     gold:       '#C9A961',
     goldBright: '#E0BE6D',
     goldDim:    '#8E7430',
+    goldDarker: '#665323',
     navy:       '#2D5092',
+    navyLight:  '#4A78C7',
     navyDeep:   '#1A325A',
     navyDark:   '#0F1E36',
+    teal:       '#5BB7B3',
     text:       '#E8ECF4',
     muted:      '#9AAAC4',
     grid:       'rgba(201,169,97,0.08)',
     axis:       'rgba(154,170,196,0.4)',
     success:    '#5EE6A0',
+    successDim: '#7BD389',
     danger:     '#FF8FA3',
     amber:      '#F5C97F',
+    gray:       '#5A6B85',
+    grayDark:   '#3F4F6E',
+    grayDeep:   '#2A3850',
+    warm:       '#A5824A',
   };
 
   function baseOpts() {
     return {
       textStyle: { fontFamily: 'Inter, system-ui, sans-serif', color: C.muted },
-      grid: { left: 40, right: 16, top: 24, bottom: 28, containLabel: true },
+      grid: { left: 36, right: 12, top: 18, bottom: 22, containLabel: true },
       tooltip: {
         backgroundColor: 'rgba(15,30,54,0.96)',
         borderColor: 'rgba(201,169,97,0.35)',
         borderWidth: 1,
-        textStyle: { color: C.text, fontFamily: 'Inter, system-ui, sans-serif', fontSize: 12 },
-        extraCssText: 'box-shadow: 0 12px 40px rgba(0,0,0,0.5); backdrop-filter: blur(6px);'
+        textStyle: { color: C.text, fontFamily: 'Inter, system-ui, sans-serif', fontSize: 11 },
+        extraCssText: 'box-shadow: 0 12px 32px rgba(0,0,0,0.5); backdrop-filter: blur(6px);'
       },
-      animationDuration: 600,
+      animationDuration: 500,
       animationEasing: 'cubicOut',
     };
   }
 
-  // Formatters
   const eurShort = (v) => {
     const a = Math.abs(v);
     if (a >= 1_000_000) return '€ ' + (v / 1_000_000).toFixed(2).replace('.', ',') + ' M';
     if (a >= 1_000)     return '€ ' + Math.round(v / 1000) + ' k';
     return '€ ' + v;
   };
-  const pct = (v) => Number(v).toLocaleString('de-DE', { maximumFractionDigits: 1 }) + ' %';
+  const eurK = (v) => '€ ' + Math.round(v) + ' k';
+  const pct  = (v) => Number(v).toLocaleString('de-DE', { maximumFractionDigits: 1 }) + ' %';
+
+  const PERIODS = ['Jan', 'Feb', 'Mrz', 'Apr', 'Mai', 'Jun', 'Jul', 'Aug', 'Sep', 'Okt', 'Nov', 'Dez'];
 
   // ============================================================
   // DATA
   // ============================================================
-
-  const PERIODS = ['Jan', 'Feb', 'Mrz', 'Apr', 'Mai', 'Jun', 'Jul', 'Aug', 'Sep', 'Okt', 'Nov', 'Dez'];
 
   const DEPARTMENTS = [
     { id: 'patente',    name: 'Patente',    umsatz: 7_840_000, kosten: 3_310_000, stunden: 41_200, headcount: 18 },
@@ -70,10 +77,8 @@
     litigation: [1, 1.05, 1.10, 0.95, 0.92, 1.00, 0.85, 0.80, 1.05, 1.15, 1.18, 1.20],
     verwaltung: [1, 1.00, 1.00, 1.00, 1.00, 1.02, 1.00, 0.98, 1.00, 1.02, 1.00, 1.05],
   };
-
   function monthlyRevenue(dept) {
-    const f = DEPT_SEASONALITY[dept.id];
-    const sum = f.reduce((a, b) => a + b, 0);
+    const f = DEPT_SEASONALITY[dept.id], sum = f.reduce((a, b) => a + b, 0);
     return f.map(x => Math.round(dept.umsatz * (x / sum)));
   }
 
@@ -86,11 +91,7 @@
     { id: 'haupt',   name: 'Dr. Haupt',   dept: 'patente'    },
   ];
 
-  const ASSOCIATES = [
-    'Albers', 'Bachmann', 'Cremer', 'Dornstetter', 'Eckert', 'Frenzel',
-    'Gerlach', 'Hofbauer', 'Imhoff', 'Jelinek', 'Kraus', 'Lambrecht',
-    'Mendel', 'Neuhaus', 'Ostermann'
-  ];
+  const ASSOCIATES = ['Albers', 'Bachmann', 'Cremer', 'Dornstetter', 'Eckert', 'Frenzel', 'Gerlach', 'Hofbauer', 'Imhoff', 'Jelinek', 'Kraus', 'Lambrecht', 'Mendel', 'Neuhaus', 'Ostermann'];
 
   const ASSOC_FLOWS = [
     ['Albers',      { brenner: 280, voss: 90 }],
@@ -147,7 +148,6 @@
     { name: 'Ostermann',   role: 'Associate', util: 92, real: 86 },
   ];
 
-  // Partner-in-charge per top clients (used for table column)
   const CLIENTS = [
     { id: 'helios',   name: 'Helios Pharma AG',         industry: 'Pharma & Biotech', country: 'Deutschland', partner: 'Dr. Brenner', revenue: 612_400, margin: 61, orders: 84, newOrders: 24,  rate: 410 },
     { id: 'sumire',   name: 'Sumire Robotics K.K.',     industry: 'Maschinenbau',     country: 'Japan',       partner: 'Voss',        revenue: 488_900, margin: 54, orders: 52, newOrders: 12,  rate: 420 },
@@ -174,10 +174,8 @@
     { id: 'finora',   name: 'Finora Consumer Brands',   industry: 'Konsumgüter',      country: 'Italien',     partner: 'Dr. Lange',   revenue: 154_200, margin: 38, orders: 35, newOrders: 2,   rate: 330 },
     { id: 'noria',    name: 'Noria Renewables',         industry: 'Chemie',           country: 'Niederlande', partner: 'Köhler',      revenue: 148_700, margin: 51, orders: 18, newOrders: 19,  rate: 430 },
   ];
-
   function clientTrend(c) {
-    const base = c.revenue / 12;
-    const growth = c.newOrders / 100 / 11;
+    const base = c.revenue / 12, growth = c.newOrders / 100 / 11;
     const noise = [-0.06, 0.04, -0.02, 0.05, -0.04, 0.03, -0.05, 0.06, -0.03, 0.04, -0.02, 0.05];
     return PERIODS.map((_, i) => Math.round(base * (1 + growth * i + noise[i])));
   }
@@ -212,6 +210,59 @@
     { name: 'Mandat erteilt',  count: 13,  value:   980_000 },
   ];
 
+  // ---- Cost categories (12-month, in €k) ----
+  const COST_CATS = [
+    { id: 'persBT',   name: 'Personal · Berufsträger',  group: 'personal', color: C.gold,
+      monthly: [380, 380, 380, 380, 380, 380, 380, 380, 380, 380, 380, 380], yoy: 6 },
+    { id: 'persVw',   name: 'Personal · Verwaltung',    group: 'personal', color: C.goldDim,
+      monthly: [134, 134, 134, 134, 134, 134, 134, 134, 134, 134, 134, 134], yoy: 3 },
+    { id: 'externe',  name: 'Externe Dienstleister',    group: 'run',      color: C.warm,
+      monthly: [72, 75, 80, 78, 76, 78, 70, 65, 82, 85, 80, 88], yoy: 9 },
+    { id: 'reisen',   name: 'Reisen · Mandanten / Konferenz', group: 'invest', color: C.success,
+      monthly: [12, 18, 22, 24, 20, 18, 10, 8, 22, 26, 24, 30], yoy: 18 },
+    { id: 'marketing',name: 'Marketing & PR',           group: 'invest',   color: C.teal,
+      monthly: [10, 12, 15, 22, 18, 14, 8, 6, 16, 22, 20, 24], yoy: 18 },
+    { id: 'fortb',    name: 'Fortbildung',              group: 'invest',   color: C.successDim,
+      monthly: [4, 6, 8, 8, 6, 4, 4, 4, 8, 12, 14, 8], yoy: 12 },
+    { id: 'raum',     name: 'Raum & Nebenkosten',       group: 'run',      color: C.navy,
+      monthly: [32, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32], yoy: 0 },
+    { id: 'it',       name: 'IT & Software',            group: 'run',      color: C.navyLight,
+      monthly: [25, 22, 24, 26, 25, 24, 22, 21, 27, 28, 26, 30], yoy: 24 },
+    { id: 'versich',  name: 'Versicherungen (Berufshaftpflicht etc.)', group: 'run', color: C.gray,
+      monthly: [15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15], yoy: 5 },
+    { id: 'afa',      name: 'Abschreibungen',           group: 'run',      color: C.grayDark,
+      monthly: [12, 12, 12, 12, 12, 12, 12, 12, 12, 12, 12, 12], yoy: -2 },
+    { id: 'sonst',    name: 'Sonstiges (Bürobedarf, Bewirtung)', group: 'run', color: C.grayDeep,
+      monthly: [10, 9, 11, 10, 9, 11, 10, 8, 11, 12, 10, 12], yoy: 2 },
+    { id: 'amts',     name: 'Amts- & Verfahrensgebühren (durchlaufend)', group: 'durchlauf', color: '#94A3B8',
+      monthly: [148, 152, 158, 162, 154, 148, 135, 128, 162, 168, 160, 175], yoy: 14 },
+  ];
+
+  // ---- Marketing-ROI ----
+  const ROI_CHANNELS = [
+    { name: 'Reise-Pitches',         spend: 140, revenue: 1320 },
+    { name: 'Konferenzen',           spend: 102, revenue:  690 },
+    { name: 'Sponsoring',            spend:  79, revenue:  445 },
+    { name: 'Print / PR',            spend:  55, revenue:   95 },
+    { name: 'Web / SEO',             spend:  45, revenue:  290 },
+  ];
+  const TRAVEL_BY_PARTNER = [
+    { name: 'Dr. Brenner', travel: 38, newRev: 580 },
+    { name: 'Voss',        travel: 28, newRev: 420 },
+    { name: 'Köhler',      travel: 42, newRev: 380 },
+    { name: 'Dr. Lange',   travel: 18, newRev: 240 },
+    { name: 'Mertens',     travel: 22, newRev: 180 },
+    { name: 'Dr. Haupt',   travel: 14, newRev: 200 },
+  ];
+
+  // ---- Liquidity 13 weeks ----
+  const LIQ_WEEKS    = ['KW 25','KW 26','KW 27','KW 28','KW 29','KW 30','KW 31','KW 32','KW 33','KW 34','KW 35','KW 36','KW 37'];
+  const LIQ_INFLOW   = [   0, 480, 320, 280, 250, 220, 180, 160, 180, 220, 250, 180, 220];
+  const LIQ_OUTFLOW  = [   0,  65, 617,  65,  65,  65, 617,  65,  65, 617, 415, 345, 617];
+  const LIQ_BALANCE  = (() => {
+    let b = 1200, out = []; for (let i = 0; i < LIQ_WEEKS.length; i++) { b += LIQ_INFLOW[i] - LIQ_OUTFLOW[i]; out.push(b); } return out;
+  })();
+
   // ============================================================
   // STATE & CACHE
   // ============================================================
@@ -219,20 +270,16 @@
     deptFilter: null,
     partnerFilter: null,
     clientSort: { key: 'revenue', dir: 'desc' },
-    clientSearch: '',
-    clientIndustry: '',
-    clientCountry: '',
+    clientSearch: '', clientIndustry: '', clientCountry: '',
+    activeTpl: 'quartal',
   };
 
   const charts = {};
-
   function getOrInit(id, opts = {}) {
-    const el = document.getElementById(id);
-    if (!el) return null;
+    const el = document.getElementById(id); if (!el) return null;
     if (!charts[id]) charts[id] = echarts.init(el, null, { renderer: opts.renderer || 'svg' });
     return charts[id];
   }
-
   window.addEventListener('resize', () => {
     Object.values(charts).forEach(c => { try { c && c.resize(); } catch (e) {} });
   });
@@ -241,86 +288,112 @@
   // 02 / EXECUTIVE COCKPIT
   // ============================================================
   function renderCockpitTrend() {
-    const ch = getOrInit('cockpitTrend');
-    if (!ch) return;
+    const ch = getOrInit('cockpitTrend'); if (!ch) return;
     const umsatz = [9.2, 9.6, 10.3, 10.8, 11.1, 11.6, 12.1, 11.8, 12.4, 13.0, 13.6, 14.3];
     const kosten = [4.2, 4.4, 4.5, 4.7, 4.8, 4.9, 5.0, 4.9, 5.1, 5.3, 5.4, 5.6];
     ch.setOption({
       ...baseOpts(),
-      grid: { left: 10, right: 10, top: 16, bottom: 24, containLabel: true },
-      tooltip: {
-        ...baseOpts().tooltip,
-        trigger: 'axis',
-        formatter: (params) => {
-          let s = `<div style="font-weight:600;color:${C.text};margin-bottom:4px;">${params[0].axisValue} 2026</div>`;
-          params.forEach(p => {
-            s += `<div style="display:flex;justify-content:space-between;gap:14px;color:${C.muted};font-size:11px;">
-                    <span>${p.marker}${p.seriesName}</span>
-                    <span style="color:${C.text};">€ ${p.value.toLocaleString('de-DE', {minimumFractionDigits:1,maximumFractionDigits:1})} M</span>
-                  </div>`;
-          });
-          return s;
-        }
-      },
-      xAxis: {
-        type: 'category', data: PERIODS, boundaryGap: false,
-        axisLine: { lineStyle: { color: C.axis } }, axisTick: { show: false },
-        axisLabel: { color: C.muted, fontSize: 11 }
-      },
-      yAxis: {
-        type: 'value',
-        axisLine: { show: false }, axisTick: { show: false },
-        splitLine: { lineStyle: { color: C.grid } },
-        axisLabel: { color: C.muted, fontSize: 10, formatter: (v) => v + ' M' }
-      },
+      grid: { left: 6, right: 6, top: 8, bottom: 18, containLabel: true },
+      tooltip: { ...baseOpts().tooltip, trigger: 'axis',
+        formatter: (params) => `<div style="font-weight:600;color:${C.text};margin-bottom:3px;">${params[0].axisValue} 2026</div>` +
+          params.map(p => `<div style="display:flex;justify-content:space-between;gap:12px;color:${C.muted};font-size:11px;"><span>${p.marker}${p.seriesName}</span><span style="color:${C.text};">€ ${p.value.toLocaleString('de-DE',{minimumFractionDigits:1,maximumFractionDigits:1})} M</span></div>`).join('') },
+      xAxis: { type: 'category', data: PERIODS, boundaryGap: false, axisLine: { lineStyle: { color: C.axis } }, axisTick: { show: false }, axisLabel: { color: C.muted, fontSize: 10 } },
+      yAxis: { type: 'value', axisLine: { show: false }, axisTick: { show: false }, splitLine: { lineStyle: { color: C.grid } }, axisLabel: { color: C.muted, fontSize: 9, formatter: (v) => v + ' M' } },
       series: [
-        {
-          name: 'Umsatz', type: 'line', smooth: true, symbol: 'none',
-          data: umsatz,
-          lineStyle: { width: 2.5, color: C.goldBright },
-          areaStyle: {
-            color: { type: 'linear', x: 0, y: 0, x2: 0, y2: 1,
-              colorStops: [{ offset: 0, color: 'rgba(201,169,97,0.35)' }, { offset: 1, color: 'rgba(201,169,97,0.0)' }] }
-          }
-        },
-        {
-          name: 'Personalkosten', type: 'line', smooth: true, symbol: 'none',
-          data: kosten,
-          lineStyle: { width: 1.8, color: C.navy, type: 'dashed' }
-        }
+        { name: 'Umsatz', type: 'line', smooth: true, symbol: 'none', data: umsatz,
+          lineStyle: { width: 2.2, color: C.goldBright },
+          areaStyle: { color: { type: 'linear', x: 0, y: 0, x2: 0, y2: 1, colorStops: [{ offset: 0, color: 'rgba(201,169,97,0.32)' }, { offset: 1, color: 'rgba(201,169,97,0)' }] } } },
+        { name: 'Personal', type: 'line', smooth: true, symbol: 'none', data: kosten,
+          lineStyle: { width: 1.6, color: C.navy, type: 'dashed' } }
       ]
     });
   }
 
   function renderCockpitDept() {
-    const ch = getOrInit('cockpitDept');
-    if (!ch) return;
+    const ch = getOrInit('cockpitDept'); if (!ch) return;
     const palette = ['#C9A961', '#E0BE6D', '#8E7430', '#2D5092', '#4A78C7'];
     ch.setOption({
       ...baseOpts(),
-      tooltip: {
-        ...baseOpts().tooltip,
-        formatter: (p) => `<div style="font-weight:600;color:${C.text};">${p.name}</div>
-                           <div style="color:${C.muted};font-size:11px;margin-top:2px;">${eurShort(p.value)} · ${p.percent}%</div>`
-      },
-      legend: { bottom: 0, textStyle: { color: C.muted, fontSize: 11 }, itemWidth: 10, itemHeight: 10 },
+      tooltip: { ...baseOpts().tooltip,
+        formatter: (p) => `<div style="font-weight:600;color:${C.text};">${p.name}</div><div style="color:${C.muted};font-size:11px;margin-top:1px;">${eurShort(p.value)} · ${p.percent}%</div>` },
+      legend: { bottom: 0, textStyle: { color: C.muted, fontSize: 10 }, itemWidth: 8, itemHeight: 8 },
       series: [{
-        type: 'pie',
-        radius: ['58%', '78%'], center: ['50%', '45%'],
-        avoidLabelOverlap: true,
-        itemStyle: { borderColor: C.navyDark, borderWidth: 2 },
-        label: { show: false }, labelLine: { show: false },
+        type: 'pie', radius: ['54%', '76%'], center: ['50%', '44%'], avoidLabelOverlap: true,
+        itemStyle: { borderColor: C.navyDark, borderWidth: 2 }, label: { show: false }, labelLine: { show: false },
         data: DEPARTMENTS.map((d, i) => ({ name: d.name, value: d.umsatz, itemStyle: { color: palette[i] } }))
       }]
     });
   }
 
   // ============================================================
-  // 03 / ABTEILUNGEN
+  // 03 / KOSTEN-STRUKTUR
   // ============================================================
-  function visibleDepartments() {
-    return state.deptFilter ? DEPARTMENTS.filter(d => d.id === state.deptFilter) : DEPARTMENTS;
+  function renderCostStack() {
+    const ch = getOrInit('costStack'); if (!ch) return;
+    ch.setOption({
+      ...baseOpts(),
+      grid: { left: 6, right: 6, top: 8, bottom: 32, containLabel: true },
+      tooltip: { ...baseOpts().tooltip, trigger: 'axis', axisPointer: { type: 'shadow' },
+        formatter: (params) => {
+          let s = `<div style="font-weight:600;color:${C.text};margin-bottom:3px;">${params[0].axisValue} 2026</div>`;
+          let tot = 0;
+          params.forEach(p => { tot += p.value; });
+          params.slice().reverse().forEach(p => {
+            s += `<div style="display:flex;justify-content:space-between;gap:12px;color:${C.muted};font-size:10.5px;"><span>${p.marker}${p.seriesName}</span><span style="color:${C.text};">€ ${p.value} k</span></div>`;
+          });
+          s += `<div style="margin-top:3px;padding-top:3px;border-top:1px solid rgba(255,255,255,0.1);display:flex;justify-content:space-between;gap:12px;"><span style="color:${C.muted};font-size:10.5px;">Gesamt</span><span style="color:${C.goldBright};font-weight:600;font-size:10.5px;">€ ${tot} k</span></div>`;
+          return s;
+        }
+      },
+      legend: { bottom: 0, textStyle: { color: C.muted, fontSize: 9 }, itemWidth: 8, itemHeight: 8, type: 'scroll' },
+      xAxis: { type: 'category', data: PERIODS, axisLine: { lineStyle: { color: C.axis } }, axisTick: { show: false }, axisLabel: { color: C.muted, fontSize: 10 } },
+      yAxis: { type: 'value', axisLine: { show: false }, axisTick: { show: false }, splitLine: { lineStyle: { color: C.grid } }, axisLabel: { color: C.muted, fontSize: 9, formatter: (v) => v + ' k' } },
+      series: COST_CATS.map(cat => ({
+        name: cat.name, type: 'bar', stack: 'cost', data: cat.monthly, barWidth: 14,
+        itemStyle: { color: cat.color, borderRadius: cat.id === COST_CATS[COST_CATS.length-1].id ? [3,3,0,0] : 0 }
+      }))
+    });
   }
+
+  function renderCostDonut() {
+    const ch = getOrInit('costDonut'); if (!ch) return;
+    const sum = (m) => m.reduce((a, b) => a + b, 0);
+    const data = COST_CATS.map(cat => ({ name: cat.name, value: sum(cat.monthly), itemStyle: { color: cat.color } }));
+    ch.setOption({
+      ...baseOpts(),
+      tooltip: { ...baseOpts().tooltip,
+        formatter: (p) => `<div style="font-weight:600;color:${C.text};">${p.name}</div><div style="color:${C.muted};font-size:11px;margin-top:1px;">€ ${p.value} k · ${p.percent}%</div>` },
+      legend: { type: 'scroll', bottom: 0, textStyle: { color: C.muted, fontSize: 9 }, itemWidth: 8, itemHeight: 8 },
+      series: [{
+        type: 'pie', radius: ['52%', '76%'], center: ['50%', '42%'], avoidLabelOverlap: true,
+        itemStyle: { borderColor: C.navyDark, borderWidth: 1.5 }, label: { show: false }, labelLine: { show: false },
+        data
+      }]
+    });
+  }
+
+  function renderCostYoy() {
+    const ch = getOrInit('costYoy'); if (!ch) return;
+    const data = COST_CATS.slice().sort((a, b) => a.yoy - b.yoy);
+    ch.setOption({
+      ...baseOpts(),
+      grid: { left: 6, right: 30, top: 6, bottom: 6, containLabel: true },
+      tooltip: { ...baseOpts().tooltip, trigger: 'axis', axisPointer: { type: 'shadow' },
+        formatter: (p) => `<div style="color:${C.text};font-weight:600;">${p[0].name}</div><div style="color:${C.muted};font-size:11px;margin-top:1px;">YoY ${p[0].value > 0 ? '+' : ''}${p[0].value} %</div>` },
+      xAxis: { type: 'value', axisLine: { show: false }, axisTick: { show: false }, splitLine: { lineStyle: { color: C.grid } }, axisLabel: { color: C.muted, fontSize: 9, formatter: (v) => (v > 0 ? '+' : '') + v + '%' } },
+      yAxis: { type: 'category', data: data.map(d => d.name), axisLine: { show: false }, axisTick: { show: false }, axisLabel: { color: C.muted, fontSize: 10, width: 160, overflow: 'truncate' } },
+      series: [{
+        type: 'bar', barWidth: 9,
+        data: data.map(d => ({ value: d.yoy, itemStyle: { color: d.yoy > 15 ? C.danger : d.yoy > 0 ? d.color : C.success, borderRadius: [0, 3, 3, 0] } })),
+        label: { show: true, position: 'right', color: C.muted, fontSize: 9, formatter: (p) => (p.value > 0 ? '+' : '') + p.value + ' %' }
+      }]
+    });
+  }
+
+  // ============================================================
+  // 04 / ABTEILUNGEN
+  // ============================================================
+  function visibleDepartments() { return state.deptFilter ? DEPARTMENTS.filter(d => d.id === state.deptFilter) : DEPARTMENTS; }
 
   function updateAbtKPIs() {
     const depts = visibleDepartments();
@@ -335,8 +408,7 @@
   }
 
   function updateAbtFilterChip() {
-    const chip = document.getElementById('abtFilterChip');
-    if (!chip) return;
+    const chip = document.getElementById('abtFilterChip'); if (!chip) return;
     if (!state.deptFilter) { chip.textContent = 'Alle Abteilungen'; return; }
     const d = DEPARTMENTS.find(x => x.id === state.deptFilter);
     chip.textContent = d ? d.name : 'Alle Abteilungen';
@@ -347,52 +419,22 @@
     const f = state.deptFilter;
     ch.setOption({
       ...baseOpts(),
-      grid: { left: 12, right: 16, top: 24, bottom: 28, containLabel: true },
-      tooltip: {
-        ...baseOpts().tooltip, trigger: 'axis', axisPointer: { type: 'shadow' },
-        formatter: (params) => {
-          let s = `<div style="font-weight:600;color:${C.text};margin-bottom:4px;">${params[0].axisValue}</div>`;
-          params.forEach(p => {
-            s += `<div style="display:flex;justify-content:space-between;gap:14px;color:${C.muted};font-size:11px;">
-                    <span>${p.marker}${p.seriesName}</span>
-                    <span style="color:${C.text};">${eurShort(p.value)}</span>
-                  </div>`;
-          });
-          return s;
-        }
-      },
-      xAxis: {
-        type: 'category', data: DEPARTMENTS.map(d => d.name),
-        axisLine: { lineStyle: { color: C.axis } }, axisTick: { show: false },
-        axisLabel: { color: C.muted, fontSize: 11 }
-      },
-      yAxis: {
-        type: 'value', axisLine: { show: false }, axisTick: { show: false },
-        splitLine: { lineStyle: { color: C.grid } },
-        axisLabel: { color: C.muted, formatter: (v) => v >= 1_000_000 ? (v / 1_000_000) + ' M' : (v / 1000) + ' k' }
-      },
+      grid: { left: 8, right: 12, top: 12, bottom: 18, containLabel: true },
+      tooltip: { ...baseOpts().tooltip, trigger: 'axis', axisPointer: { type: 'shadow' },
+        formatter: (params) => `<div style="font-weight:600;color:${C.text};margin-bottom:3px;">${params[0].axisValue}</div>` +
+          params.map(p => `<div style="display:flex;justify-content:space-between;gap:12px;color:${C.muted};font-size:11px;"><span>${p.marker}${p.seriesName}</span><span style="color:${C.text};">${eurShort(p.value)}</span></div>`).join('') },
+      xAxis: { type: 'category', data: DEPARTMENTS.map(d => d.name), axisLine: { lineStyle: { color: C.axis } }, axisTick: { show: false }, axisLabel: { color: C.muted, fontSize: 10 } },
+      yAxis: { type: 'value', axisLine: { show: false }, axisTick: { show: false }, splitLine: { lineStyle: { color: C.grid } }, axisLabel: { color: C.muted, fontSize: 9, formatter: (v) => v >= 1_000_000 ? (v / 1_000_000) + ' M' : (v / 1000) + ' k' } },
       series: [
-        {
-          name: 'Umsatz', type: 'bar', barWidth: 18,
-          data: DEPARTMENTS.map(d => ({
-            value: d.umsatz,
-            itemStyle: { color: !f || f === d.id ? C.gold : 'rgba(201,169,97,0.2)', borderRadius: [4, 4, 0, 0] }
-          }))
-        },
-        {
-          name: 'Personalkosten', type: 'bar', barWidth: 18,
-          data: DEPARTMENTS.map(d => ({
-            value: d.kosten,
-            itemStyle: { color: !f || f === d.id ? C.navy : 'rgba(45,80,146,0.25)', borderRadius: [4, 4, 0, 0] }
-          }))
-        }
+        { name: 'Umsatz', type: 'bar', barWidth: 14,
+          data: DEPARTMENTS.map(d => ({ value: d.umsatz, itemStyle: { color: !f || f === d.id ? C.gold : 'rgba(201,169,97,0.2)', borderRadius: [3, 3, 0, 0] } })) },
+        { name: 'Personalkosten', type: 'bar', barWidth: 14,
+          data: DEPARTMENTS.map(d => ({ value: d.kosten, itemStyle: { color: !f || f === d.id ? C.navy : 'rgba(45,80,146,0.25)', borderRadius: [3, 3, 0, 0] } })) }
       ]
     });
-
     ch.off('click');
     ch.on('click', (p) => {
-      const dept = DEPARTMENTS.find(d => d.name === p.name);
-      if (!dept) return;
+      const dept = DEPARTMENTS.find(d => d.name === p.name); if (!dept) return;
       state.deptFilter = (state.deptFilter === dept.id) ? null : dept.id;
       refreshAbteilungen();
     });
@@ -404,27 +446,18 @@
     const f = state.deptFilter;
     ch.setOption({
       ...baseOpts(),
-      tooltip: {
-        ...baseOpts().tooltip,
-        formatter: (p) => `<div style="font-weight:600;color:${C.text};">${p.name}</div>
-                           <div style="color:${C.muted};font-size:11px;margin-top:2px;">${p.value.toLocaleString('de-DE')} h · ${p.percent}%</div>`
-      },
-      legend: { bottom: 0, textStyle: { color: C.muted, fontSize: 11 }, itemWidth: 10, itemHeight: 10 },
+      tooltip: { ...baseOpts().tooltip,
+        formatter: (p) => `<div style="font-weight:600;color:${C.text};">${p.name}</div><div style="color:${C.muted};font-size:11px;margin-top:1px;">${p.value.toLocaleString('de-DE')} h · ${p.percent}%</div>` },
+      legend: { bottom: 0, textStyle: { color: C.muted, fontSize: 10 }, itemWidth: 8, itemHeight: 8 },
       series: [{
-        type: 'pie', radius: ['58%', '78%'], center: ['50%', '45%'],
-        avoidLabelOverlap: true,
-        itemStyle: { borderColor: C.navyDark, borderWidth: 2 },
-        label: { show: false }, labelLine: { show: false },
-        data: DEPARTMENTS.map((d, i) => ({
-          name: d.name, value: d.stunden,
-          itemStyle: { color: !f || f === d.id ? palette[i] : 'rgba(255,255,255,0.08)' }
-        }))
+        type: 'pie', radius: ['54%', '76%'], center: ['50%', '44%'], avoidLabelOverlap: true,
+        itemStyle: { borderColor: C.navyDark, borderWidth: 2 }, label: { show: false }, labelLine: { show: false },
+        data: DEPARTMENTS.map((d, i) => ({ name: d.name, value: d.stunden, itemStyle: { color: !f || f === d.id ? palette[i] : 'rgba(255,255,255,0.08)' } }))
       }]
     });
     ch.off('click');
     ch.on('click', (p) => {
-      const dept = DEPARTMENTS.find(d => d.name === p.name);
-      if (!dept) return;
+      const dept = DEPARTMENTS.find(d => d.name === p.name); if (!dept) return;
       state.deptFilter = (state.deptFilter === dept.id) ? null : dept.id;
       refreshAbteilungen();
     });
@@ -436,33 +469,20 @@
     const depts = state.deptFilter ? DEPARTMENTS.filter(d => d.id === state.deptFilter) : DEPARTMENTS;
     ch.setOption({
       ...baseOpts(),
-      grid: { left: 12, right: 16, top: 24, bottom: 38, containLabel: true },
-      tooltip: {
-        ...baseOpts().tooltip, trigger: 'axis',
+      grid: { left: 6, right: 6, top: 6, bottom: 24, containLabel: true },
+      tooltip: { ...baseOpts().tooltip, trigger: 'axis',
         formatter: (params) => {
-          let s = `<div style="font-weight:600;color:${C.text};margin-bottom:4px;">${params[0].axisValue} 2026</div>`;
-          let tot = 0;
-          params.forEach(p => { tot += p.value; s += `<div style="display:flex;justify-content:space-between;gap:14px;color:${C.muted};font-size:11px;"><span>${p.marker}${p.seriesName}</span><span style="color:${C.text};">${eurShort(p.value)}</span></div>`; });
-          s += `<div style="margin-top:4px;padding-top:4px;border-top:1px solid rgba(255,255,255,0.1);display:flex;justify-content:space-between;gap:14px;"><span style="color:${C.muted};font-size:11px;">Gesamt</span><span style="color:${C.goldBright};font-weight:600;font-size:11px;">${eurShort(tot)}</span></div>`;
+          let s = `<div style="font-weight:600;color:${C.text};margin-bottom:3px;">${params[0].axisValue}</div>`;
+          let tot = 0; params.forEach(p => { tot += p.value; s += `<div style="display:flex;justify-content:space-between;gap:12px;color:${C.muted};font-size:11px;"><span>${p.marker}${p.seriesName}</span><span style="color:${C.text};">${eurShort(p.value)}</span></div>`; });
+          s += `<div style="margin-top:3px;padding-top:3px;border-top:1px solid rgba(255,255,255,0.1);display:flex;justify-content:space-between;gap:12px;"><span style="color:${C.muted};font-size:11px;">Gesamt</span><span style="color:${C.goldBright};font-weight:600;font-size:11px;">${eurShort(tot)}</span></div>`;
           return s;
-        }
-      },
-      legend: { bottom: 0, textStyle: { color: C.muted, fontSize: 11 }, itemWidth: 10, itemHeight: 10 },
-      xAxis: {
-        type: 'category', boundaryGap: false, data: PERIODS,
-        axisLine: { lineStyle: { color: C.axis } }, axisTick: { show: false },
-        axisLabel: { color: C.muted, fontSize: 11 }
-      },
-      yAxis: {
-        type: 'value', axisLine: { show: false }, axisTick: { show: false },
-        splitLine: { lineStyle: { color: C.grid } },
-        axisLabel: { color: C.muted, formatter: (v) => v >= 1_000_000 ? (v / 1_000_000).toFixed(1) + ' M' : (v / 1000) + ' k' }
-      },
+        } },
+      legend: { bottom: 0, textStyle: { color: C.muted, fontSize: 10 }, itemWidth: 8, itemHeight: 8 },
+      xAxis: { type: 'category', boundaryGap: false, data: PERIODS, axisLine: { lineStyle: { color: C.axis } }, axisTick: { show: false }, axisLabel: { color: C.muted, fontSize: 10 } },
+      yAxis: { type: 'value', axisLine: { show: false }, axisTick: { show: false }, splitLine: { lineStyle: { color: C.grid } }, axisLabel: { color: C.muted, fontSize: 9, formatter: (v) => v >= 1_000_000 ? (v / 1_000_000).toFixed(1) + ' M' : (v / 1000) + ' k' } },
       series: depts.map(d => ({
-        name: d.name, type: 'line', stack: 'total', smooth: true, symbol: 'none',
-        data: monthlyRevenue(d),
-        lineStyle: { width: 1.5, color: palette[d.id] },
-        areaStyle: { opacity: 0.55, color: palette[d.id] }
+        name: d.name, type: 'line', stack: 'total', smooth: true, symbol: 'none', data: monthlyRevenue(d),
+        lineStyle: { width: 1.4, color: palette[d.id] }, areaStyle: { opacity: 0.55, color: palette[d.id] }
       }))
     });
   }
@@ -470,38 +490,31 @@
   function renderAbtHighlights() {
     const ul = document.getElementById('abtHighlights'); if (!ul) return;
     const items = state.deptFilter ? (() => {
-      const d = DEPARTMENTS.find(x => x.id === state.deptFilter);
-      const m = monthlyRevenue(d);
+      const d = DEPARTMENTS.find(x => x.id === state.deptFilter), m = monthlyRevenue(d);
       const best = m.indexOf(Math.max(...m));
       return [
-        { tone: 'note', text: `<strong>${d.name}</strong>: ${eurShort(d.umsatz)} Umsatz, ${d.headcount} Mitarbeiter.` },
+        { tone: 'note', text: `<strong>${d.name}</strong>: ${eurShort(d.umsatz)} Umsatz, ${d.headcount} MA.` },
         { tone: 'up',   text: `Stärkster Monat: <strong>${PERIODS[best]}</strong> mit ${eurShort(m[best])}.` },
         { tone: 'note', text: `${d.stunden.toLocaleString('de-DE')} h · Umsatz/Std. € ${Math.round(d.umsatz / d.stunden)}.` },
-        { tone: 'note', text: `Marge nach Personal: <strong>${pct((d.umsatz - d.kosten) / d.umsatz * 100)}</strong>.` },
       ];
     })() : [
-      { tone: 'up',   text: '<strong>Patente</strong> macht 55 % vom Kanzleiumsatz, drittes Wachstumsquartal in Folge.' },
-      { tone: 'down', text: '<strong>Verwaltung</strong>: 16 % der Stunden, 6 % vom Umsatz — Effizienz-Hebel.' },
-      { tone: 'up',   text: '<strong>Litigation</strong> mit höchster Marge (61 %) — Kapazität ausgereizt.' },
-      { tone: 'note', text: '<strong>Marken</strong> stabil und planbar — Brot und Butter.' },
+      { tone: 'up',   text: '<strong>Patente</strong> 55 % vom Umsatz, 3. Wachstumsquartal.' },
+      { tone: 'down', text: '<strong>Verwaltung</strong>: 16 % der Stunden, 6 % vom Umsatz.' },
+      { tone: 'up',   text: '<strong>Litigation</strong> höchste Marge (61 %), Kapazität ausgereizt.' },
     ];
     ul.innerHTML = items.map(it => {
       const dot = it.tone === 'up' ? `<span class="up">▲</span>` : it.tone === 'down' ? `<span class="down">▼</span>` : `<span class="text-gold-300">◆</span>`;
-      return `<li class="flex gap-2.5"><span class="mt-0.5">${dot}</span><span class="text-slate-300">${it.text}</span></li>`;
+      return `<li class="flex gap-2"><span class="mt-0.5">${dot}</span><span class="text-slate-300">${it.text}</span></li>`;
     }).join('');
   }
 
   function refreshAbteilungen() {
-    updateAbtKPIs();
-    updateAbtFilterChip();
-    renderAbtBar();
-    renderAbtDonut();
-    renderAbtArea();
-    renderAbtHighlights();
+    updateAbtKPIs(); updateAbtFilterChip();
+    renderAbtBar(); renderAbtDonut(); renderAbtArea(); renderAbtHighlights();
   }
 
   // ============================================================
-  // 04 / ANWALTS-MATRIX
+  // 05 / ANWALTS-MATRIX
   // ============================================================
   function updatePartnerFilterChip() {
     const chip = document.getElementById('partnerFilterChip'); if (!chip) return;
@@ -531,25 +544,21 @@
     });
     ch.setOption({
       ...baseOpts(),
-      tooltip: {
-        ...baseOpts().tooltip, trigger: 'item',
+      tooltip: { ...baseOpts().tooltip, trigger: 'item',
         formatter: (p) => p.dataType === 'edge'
-          ? `<div style="color:${C.text};font-weight:600;">${p.data.source} → ${p.data.target}</div><div style="color:${C.muted};font-size:11px;margin-top:2px;">${p.value.toLocaleString('de-DE')} Std. / Quartal</div>`
-          : `<div style="color:${C.text};font-weight:600;">${p.name}</div>`
-      },
+          ? `<div style="color:${C.text};font-weight:600;">${p.data.source} → ${p.data.target}</div><div style="color:${C.muted};font-size:11px;margin-top:1px;">${p.value.toLocaleString('de-DE')} Std/Q</div>`
+          : `<div style="color:${C.text};font-weight:600;">${p.name}</div>` },
       series: [{
-        type: 'sankey', left: 8, right: 110, top: 10, bottom: 10,
-        nodeWidth: 14, nodeGap: 6, layoutIterations: 24, emphasis: { focus: 'adjacency' },
+        type: 'sankey', left: 4, right: 100, top: 6, bottom: 6,
+        nodeWidth: 12, nodeGap: 4, layoutIterations: 24, emphasis: { focus: 'adjacency' },
         data: nodes, links: links,
-        label: { color: C.muted, fontSize: 11, fontFamily: 'Inter' },
-        lineStyle: { color: 'source' }
+        label: { color: C.muted, fontSize: 10.5, fontFamily: 'Inter' }, lineStyle: { color: 'source' }
       }]
     });
     ch.off('click');
     ch.on('click', (p) => {
       if (p.dataType !== 'node') return;
-      const partner = PARTNERS.find(x => x.name === p.name);
-      if (!partner) return;
+      const partner = PARTNERS.find(x => x.name === p.name); if (!partner) return;
       state.partnerFilter = (state.partnerFilter === partner.id) ? null : partner.id;
       refreshAnwaelte();
     });
@@ -560,21 +569,16 @@
     const data = [...TOP_BILLERS].sort((a, b) => a.value - b.value);
     ch.setOption({
       ...baseOpts(),
-      grid: { left: 12, right: 32, top: 10, bottom: 16, containLabel: true },
-      tooltip: {
-        ...baseOpts().tooltip, trigger: 'axis', axisPointer: { type: 'shadow' },
-        formatter: (params) => {
-          const p = params[0];
-          const row = data.find(d => d.name === p.name);
-          return `<div style="color:${C.text};font-weight:600;">${p.name}</div><div style="color:${C.muted};font-size:11px;">${row.role}</div><div style="color:${C.goldBright};font-weight:600;margin-top:2px;">${eurShort(p.value)}</div>`;
-        }
-      },
-      xAxis: { type: 'value', axisLine: { show: false }, axisTick: { show: false }, splitLine: { lineStyle: { color: C.grid } }, axisLabel: { color: C.muted, fontSize: 10, formatter: (v) => v >= 1_000_000 ? (v / 1_000_000).toFixed(1) + ' M' : (v / 1000) + ' k' } },
-      yAxis: { type: 'category', data: data.map(d => d.name), axisLine: { show: false }, axisTick: { show: false }, axisLabel: { color: C.text, fontSize: 11 } },
+      grid: { left: 6, right: 28, top: 6, bottom: 6, containLabel: true },
+      tooltip: { ...baseOpts().tooltip, trigger: 'axis', axisPointer: { type: 'shadow' },
+        formatter: (params) => { const p = params[0], row = data.find(d => d.name === p.name);
+          return `<div style="color:${C.text};font-weight:600;">${p.name}</div><div style="color:${C.muted};font-size:11px;">${row.role}</div><div style="color:${C.goldBright};font-weight:600;margin-top:1px;">${eurShort(p.value)}</div>`; } },
+      xAxis: { type: 'value', axisLine: { show: false }, axisTick: { show: false }, splitLine: { lineStyle: { color: C.grid } }, axisLabel: { color: C.muted, fontSize: 9, formatter: (v) => v >= 1_000_000 ? (v / 1_000_000).toFixed(1) + ' M' : (v / 1000) + ' k' } },
+      yAxis: { type: 'category', data: data.map(d => d.name), axisLine: { show: false }, axisTick: { show: false }, axisLabel: { color: C.text, fontSize: 10 } },
       series: [{
-        type: 'bar', barWidth: 12,
-        data: data.map(d => ({ value: d.value, itemStyle: { color: d.role === 'Partner' ? C.gold : C.navy, borderRadius: [0, 4, 4, 0] } })),
-        label: { show: true, position: 'right', color: C.muted, fontSize: 10, formatter: (p) => eurShort(p.value) }
+        type: 'bar', barWidth: 10,
+        data: data.map(d => ({ value: d.value, itemStyle: { color: d.role === 'Partner' ? C.gold : C.navy, borderRadius: [0, 3, 3, 0] } })),
+        label: { show: true, position: 'right', color: C.muted, fontSize: 9, formatter: (p) => eurShort(p.value) }
       }]
     });
   }
@@ -585,14 +589,14 @@
     const associates = ANW_SCATTER.filter(x => x.role === 'Associate').map(x => [x.util, x.real, x.name]);
     ch.setOption({
       ...baseOpts(),
-      grid: { left: 36, right: 18, top: 14, bottom: 38, containLabel: true },
-      tooltip: { ...baseOpts().tooltip, trigger: 'item', formatter: (p) => `<div style="color:${C.text};font-weight:600;">${p.value[2]}</div><div style="color:${C.muted};font-size:11px;margin-top:2px;">Auslastung ${p.value[0]} % · Realization ${p.value[1]} %</div>` },
-      legend: { bottom: 0, textStyle: { color: C.muted, fontSize: 11 } },
-      xAxis: { name: 'Auslastung (%)', nameLocation: 'middle', nameGap: 28, nameTextStyle: { color: C.muted, fontSize: 11 }, min: 60, max: 100, axisLine: { lineStyle: { color: C.axis } }, splitLine: { lineStyle: { color: C.grid } }, axisLabel: { color: C.muted } },
-      yAxis: { name: 'Realization (%)', nameLocation: 'middle', nameGap: 36, nameTextStyle: { color: C.muted, fontSize: 11 }, min: 70, max: 100, axisLine: { lineStyle: { color: C.axis } }, splitLine: { lineStyle: { color: C.grid } }, axisLabel: { color: C.muted } },
+      grid: { left: 28, right: 14, top: 6, bottom: 24, containLabel: true },
+      tooltip: { ...baseOpts().tooltip, trigger: 'item', formatter: (p) => `<div style="color:${C.text};font-weight:600;">${p.value[2]}</div><div style="color:${C.muted};font-size:11px;margin-top:1px;">Aus. ${p.value[0]} % · Real. ${p.value[1]} %</div>` },
+      legend: { bottom: 0, textStyle: { color: C.muted, fontSize: 10 } },
+      xAxis: { name: 'Auslastung %', nameLocation: 'middle', nameGap: 22, nameTextStyle: { color: C.muted, fontSize: 10 }, min: 60, max: 100, axisLine: { lineStyle: { color: C.axis } }, splitLine: { lineStyle: { color: C.grid } }, axisLabel: { color: C.muted, fontSize: 9 } },
+      yAxis: { name: 'Realiz. %', nameLocation: 'middle', nameGap: 28, nameTextStyle: { color: C.muted, fontSize: 10 }, min: 70, max: 100, axisLine: { lineStyle: { color: C.axis } }, splitLine: { lineStyle: { color: C.grid } }, axisLabel: { color: C.muted, fontSize: 9 } },
       series: [
-        { name: 'Partner',   type: 'scatter', symbolSize: 14, data: partners,   itemStyle: { color: C.gold, opacity: 0.9, borderColor: 'rgba(255,255,255,0.2)' } },
-        { name: 'Associate', type: 'scatter', symbolSize: 11, data: associates, itemStyle: { color: C.navy, opacity: 0.85, borderColor: 'rgba(255,255,255,0.2)' } },
+        { name: 'Partner',   type: 'scatter', symbolSize: 11, data: partners,   itemStyle: { color: C.gold, opacity: 0.9, borderColor: 'rgba(255,255,255,0.2)' } },
+        { name: 'Associate', type: 'scatter', symbolSize: 9,  data: associates, itemStyle: { color: C.navy, opacity: 0.85, borderColor: 'rgba(255,255,255,0.2)' } },
       ]
     });
   }
@@ -605,32 +609,28 @@
       const total = flows.reduce((s, f) => s + f.h, 0);
       flows.sort((a, b) => b.h - a.h);
       return [
-        { tone: 'note', text: `<strong>${p.name}</strong> erhält ${total.toLocaleString('de-DE')} Junior-Std./Quartal.` },
-        { tone: 'up',   text: `Top-Zuarbeiter: <strong>${flows[0].a}</strong> (${flows[0].h} h), <strong>${flows[1].a}</strong> (${flows[1].h} h).` },
-        { tone: 'note', text: `Zuarbeiter insgesamt: ${flows.length}.` },
+        { tone: 'note', text: `<strong>${p.name}</strong>: ${total.toLocaleString('de-DE')} Junior-Std/Q.` },
+        { tone: 'up',   text: `Top-Zuarbeit: <strong>${flows[0].a}</strong> (${flows[0].h} h).` },
+        { tone: 'note', text: `Zuarbeiter: ${flows.length}.` },
       ];
     })() : [
-      { tone: 'up',   text: '<strong>Mertens</strong>: höchste Auslastung (95 %), niedrigste Realization (78 %) — viele nicht abrechenbare Stunden.' },
-      { tone: 'note', text: '<strong>Hofbauer</strong>: 96 % Auslastung — Belastungsgrenze.' },
-      { tone: 'up',   text: '<strong>Kraus</strong> &amp; <strong>Bachmann</strong>: effizienteste Associates.' },
-      { tone: 'down', text: '<strong>Eckert</strong>: 70 % Auslastung — Kapazität für Neugeschäft.' },
+      { tone: 'up',   text: '<strong>Mertens</strong>: höchste Auslastung (95 %), niedrigste Realization (78 %).' },
+      { tone: 'note', text: '<strong>Hofbauer</strong>: 96 % — Belastungsgrenze.' },
+      { tone: 'down', text: '<strong>Eckert</strong>: 70 % — Kapazität für Neugeschäft.' },
     ];
     ul.innerHTML = items.map(it => {
       const dot = it.tone === 'up' ? `<span class="up">▲</span>` : it.tone === 'down' ? `<span class="down">▼</span>` : `<span class="text-gold-300">◆</span>`;
-      return `<li class="flex gap-2.5"><span class="mt-0.5">${dot}</span><span class="text-slate-300">${it.text}</span></li>`;
+      return `<li class="flex gap-2"><span class="mt-0.5">${dot}</span><span class="text-slate-300">${it.text}</span></li>`;
     }).join('');
   }
 
   function refreshAnwaelte() {
     updatePartnerFilterChip();
-    renderAnwSankey();
-    renderAnwBar();
-    renderAnwScatter();
-    renderAnwHighlights();
+    renderAnwSankey(); renderAnwBar(); renderAnwScatter(); renderAnwHighlights();
   }
 
   // ============================================================
-  // 05 / ANWALTS-PROFIL (Hofbauer)
+  // 06 / ANWALTS-PROFIL
   // ============================================================
   function renderProfHours() {
     const ch = getOrInit('profHours'); if (!ch) return;
@@ -638,23 +638,14 @@
     const nonBillable = [22, 26, 18, 24, 16, 14, 38, 42, 18, 12, 14, 0];
     ch.setOption({
       ...baseOpts(),
-      grid: { left: 12, right: 16, top: 14, bottom: 38, containLabel: true },
-      tooltip: {
-        ...baseOpts().tooltip, trigger: 'axis', axisPointer: { type: 'shadow' },
-        formatter: (params) => {
-          let s = `<div style="font-weight:600;color:${C.text};margin-bottom:4px;">${params[0].axisValue}</div>`;
-          let tot = 0;
-          params.forEach(p => { tot += p.value; s += `<div style="display:flex;justify-content:space-between;gap:14px;color:${C.muted};font-size:11px;"><span>${p.marker}${p.seriesName}</span><span style="color:${C.text};">${p.value} h</span></div>`; });
-          s += `<div style="margin-top:4px;padding-top:4px;border-top:1px solid rgba(255,255,255,0.1);display:flex;justify-content:space-between;gap:14px;"><span style="color:${C.muted};font-size:11px;">Gesamt</span><span style="color:${C.goldBright};font-weight:600;font-size:11px;">${tot} h</span></div>`;
-          return s;
-        }
-      },
-      legend: { bottom: 0, textStyle: { color: C.muted, fontSize: 11 } },
-      xAxis: { type: 'category', data: PERIODS, axisLine: { lineStyle: { color: C.axis } }, axisTick: { show: false }, axisLabel: { color: C.muted, fontSize: 11 } },
-      yAxis: { type: 'value', axisLine: { show: false }, axisTick: { show: false }, splitLine: { lineStyle: { color: C.grid } }, axisLabel: { color: C.muted, formatter: (v) => v + ' h' } },
+      grid: { left: 6, right: 6, top: 6, bottom: 24, containLabel: true },
+      tooltip: { ...baseOpts().tooltip, trigger: 'axis', axisPointer: { type: 'shadow' } },
+      legend: { bottom: 0, textStyle: { color: C.muted, fontSize: 10 } },
+      xAxis: { type: 'category', data: PERIODS, axisLine: { lineStyle: { color: C.axis } }, axisTick: { show: false }, axisLabel: { color: C.muted, fontSize: 10 } },
+      yAxis: { type: 'value', axisLine: { show: false }, axisTick: { show: false }, splitLine: { lineStyle: { color: C.grid } }, axisLabel: { color: C.muted, fontSize: 9, formatter: (v) => v + ' h' } },
       series: [
-        { name: 'Billable', type: 'bar', stack: 'h', data: billable, barWidth: 16, itemStyle: { color: C.gold, borderRadius: [0, 0, 0, 0] } },
-        { name: 'Nicht-billable', type: 'bar', stack: 'h', data: nonBillable, barWidth: 16, itemStyle: { color: 'rgba(45,80,146,0.7)', borderRadius: [4, 4, 0, 0] } }
+        { name: 'Billable', type: 'bar', stack: 'h', data: billable, barWidth: 14, itemStyle: { color: C.gold } },
+        { name: 'Nicht-billable', type: 'bar', stack: 'h', data: nonBillable, barWidth: 14, itemStyle: { color: 'rgba(45,80,146,0.7)', borderRadius: [3, 3, 0, 0] } }
       ]
     });
   }
@@ -672,19 +663,18 @@
     const palette = ['#C9A961', '#E0BE6D', '#B6953E', '#8E7430', '#2D5092', '#1A325A'];
     ch.setOption({
       ...baseOpts(),
-      tooltip: { ...baseOpts().tooltip, formatter: (p) => `<div style="color:${C.text};font-weight:600;">${p.name}</div><div style="color:${C.muted};font-size:11px;margin-top:2px;">${p.value} h · ${p.percent}%</div>` },
-      legend: { bottom: 0, textStyle: { color: C.muted, fontSize: 11 }, itemWidth: 10, itemHeight: 10 },
+      tooltip: { ...baseOpts().tooltip, formatter: (p) => `<div style="color:${C.text};font-weight:600;">${p.name}</div><div style="color:${C.muted};font-size:11px;margin-top:1px;">${p.value} h · ${p.percent}%</div>` },
+      legend: { bottom: 0, textStyle: { color: C.muted, fontSize: 10 }, itemWidth: 8, itemHeight: 8 },
       series: [{
-        type: 'pie', radius: ['58%', '78%'], center: ['50%', '45%'],
-        avoidLabelOverlap: true, itemStyle: { borderColor: C.navyDark, borderWidth: 2 },
-        label: { show: false }, labelLine: { show: false },
+        type: 'pie', radius: ['54%', '76%'], center: ['50%', '44%'], avoidLabelOverlap: true,
+        itemStyle: { borderColor: C.navyDark, borderWidth: 2 }, label: { show: false }, labelLine: { show: false },
         data: data.map((d, i) => ({ ...d, itemStyle: { color: palette[i] } }))
       }]
     });
   }
 
   // ============================================================
-  // 06 / MANDANTEN-LISTE
+  // 07 / MANDANTEN-LISTE
   // ============================================================
   function trendArrow(n) {
     if (n > 8)  return `<span class="up">▲ +${n} %</span>`;
@@ -693,9 +683,8 @@
   }
 
   function sparklineSVG(data) {
-    const w = 100, h = 24, p = 2;
-    const min = Math.min(...data), max = Math.max(...data);
-    const span = (max - min) || 1;
+    const w = 90, h = 22, p = 2;
+    const min = Math.min(...data), max = Math.max(...data), span = (max - min) || 1;
     const stepX = (w - p * 2) / (data.length - 1);
     const pts = data.map((v, i) => [p + i * stepX, h - p - ((v - min) / span) * (h - p * 2)]);
     const d = pts.map((pt, i) => (i === 0 ? 'M' : 'L') + pt[0].toFixed(1) + ',' + pt[1].toFixed(1)).join(' ');
@@ -704,16 +693,15 @@
     const fillD = d + ` L${pts[pts.length - 1][0].toFixed(1)},${h - p} L${pts[0][0].toFixed(1)},${h - p} Z`;
     return `<svg viewBox="0 0 ${w} ${h}" width="${w}" height="${h}" aria-hidden="true">
               <path d="${fillD}" fill="${color}" opacity="0.12"/>
-              <path d="${d}" fill="none" stroke="${color}" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+              <path d="${d}" fill="none" stroke="${color}" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/>
             </svg>`;
   }
 
   function filteredClients() {
     const q = state.clientSearch.toLowerCase().trim();
-    const ind = state.clientIndustry, ctr = state.clientCountry;
     return CLIENTS.filter(c => {
-      if (ind && c.industry !== ind) return false;
-      if (ctr && c.country  !== ctr) return false;
+      if (state.clientIndustry && c.industry !== state.clientIndustry) return false;
+      if (state.clientCountry  && c.country  !== state.clientCountry)  return false;
       if (q && !c.name.toLowerCase().includes(q)) return false;
       return true;
     });
@@ -721,8 +709,7 @@
 
   function sortedClients() {
     const arr = filteredClients().slice();
-    const { key, dir } = state.clientSort;
-    const factor = dir === 'asc' ? 1 : -1;
+    const { key, dir } = state.clientSort, factor = dir === 'asc' ? 1 : -1;
     arr.sort((a, b) => {
       const av = a[key], bv = b[key];
       if (typeof av === 'string') return av.localeCompare(bv, 'de') * factor;
@@ -736,14 +723,14 @@
     const list = sortedClients();
     tbody.innerHTML = list.map(c => `
       <tr class="hover:bg-gold-400/5">
-        <td class="px-4 py-2.5 text-slate-100">${c.name}</td>
-        <td class="px-4 py-2.5 text-slate-300">${c.industry}</td>
-        <td class="px-4 py-2.5 text-slate-300">${c.country}</td>
-        <td class="px-4 py-2.5 text-slate-300">${c.partner}</td>
-        <td class="px-4 py-2.5 text-right text-slate-100 font-medium">${eurShort(c.revenue)}</td>
-        <td class="px-4 py-2.5 text-right ${c.margin >= 55 ? 'text-gold-200' : 'text-slate-300'}">${c.margin} %</td>
-        <td class="px-4 py-2.5 text-right">${trendArrow(c.newOrders)}</td>
-        <td class="px-4 py-2.5">${sparklineSVG(c.trend)}</td>
+        <td class="px-3 py-1.5 text-slate-100">${c.name}</td>
+        <td class="px-3 py-1.5 text-slate-300">${c.industry}</td>
+        <td class="px-3 py-1.5 text-slate-300">${c.country}</td>
+        <td class="px-3 py-1.5 text-slate-300">${c.partner}</td>
+        <td class="px-3 py-1.5 text-right text-slate-100 font-medium">${eurShort(c.revenue)}</td>
+        <td class="px-3 py-1.5 text-right ${c.margin >= 55 ? 'text-gold-200' : 'text-slate-300'}">${c.margin} %</td>
+        <td class="px-3 py-1.5 text-right">${trendArrow(c.newOrders)}</td>
+        <td class="px-3 py-1.5">${sparklineSVG(c.trend)}</td>
       </tr>
     `).join('');
 
@@ -756,7 +743,6 @@
         if (arrow) arrow.textContent = state.clientSort.dir === 'asc' ? '↑' : '↓';
       }
     });
-
     document.getElementById('clientsRowsInfo').textContent = `${list.length} Mandanten`;
   }
 
@@ -775,11 +761,10 @@
   }
 
   // ============================================================
-  // 07 / MANDANTEN-DETAIL (Helios Pharma)
+  // 08 / MANDANTEN-DETAIL
   // ============================================================
   function renderClientLine() {
     const ch = getOrInit('cltLine'); if (!ch) return;
-    // 24 months synthetic
     const months = [];
     const now = new Date(2026, 5, 1);
     for (let i = 23; i >= 0; i--) {
@@ -790,13 +775,13 @@
     const data = months.map((_, i) => Math.round(base * (1 + i * 0.018) + Math.sin(i / 1.5) * 7000));
     ch.setOption({
       ...baseOpts(),
-      grid: { left: 12, right: 16, top: 16, bottom: 24, containLabel: true },
+      grid: { left: 6, right: 6, top: 8, bottom: 18, containLabel: true },
       tooltip: { ...baseOpts().tooltip, trigger: 'axis', formatter: (p) => `<div style="color:${C.muted};font-size:11px;">${p[0].axisValue}</div><div style="color:${C.text};font-weight:600;">${eurShort(p[0].value)}</div>` },
-      xAxis: { type: 'category', data: months, boundaryGap: false, axisLine: { lineStyle: { color: C.axis } }, axisTick: { show: false }, axisLabel: { color: C.muted, fontSize: 10, interval: 2 } },
-      yAxis: { type: 'value', axisLine: { show: false }, axisTick: { show: false }, splitLine: { lineStyle: { color: C.grid } }, axisLabel: { color: C.muted, fontSize: 10, formatter: (v) => v >= 1000 ? (v / 1000).toFixed(0) + ' k' : v } },
+      xAxis: { type: 'category', data: months, boundaryGap: false, axisLine: { lineStyle: { color: C.axis } }, axisTick: { show: false }, axisLabel: { color: C.muted, fontSize: 9, interval: 2 } },
+      yAxis: { type: 'value', axisLine: { show: false }, axisTick: { show: false }, splitLine: { lineStyle: { color: C.grid } }, axisLabel: { color: C.muted, fontSize: 9, formatter: (v) => v >= 1000 ? (v / 1000).toFixed(0) + ' k' : v } },
       series: [{
         type: 'line', smooth: true, symbol: 'none', data,
-        lineStyle: { width: 2.5, color: C.goldBright },
+        lineStyle: { width: 2.2, color: C.goldBright },
         areaStyle: { color: { type: 'linear', x: 0, y: 0, x2: 0, y2: 1, colorStops: [{ offset: 0, color: 'rgba(201,169,97,0.4)' }, { offset: 1, color: 'rgba(201,169,97,0)' }] } }
       }]
     });
@@ -806,16 +791,14 @@
     const ch = getOrInit('cltSH'); if (!ch) return;
     ch.setOption({
       ...baseOpts(),
-      grid: { left: 0, right: 8, top: 10, bottom: 24, containLabel: true },
-      tooltip: { ...baseOpts().tooltip, trigger: 'axis', axisPointer: { type: 'shadow' }, formatter: (params) => params.map(p => `<div style="display:flex;justify-content:space-between;gap:14px;"><span style="color:${C.muted};font-size:11px;">${p.marker}${p.seriesName}</span><span style="color:${C.text};font-size:11px;">${eurShort(p.value)}</span></div>`).join('') },
-      legend: { bottom: 0, textStyle: { color: C.muted, fontSize: 10 }, itemWidth: 10, itemHeight: 10 },
+      grid: { left: 0, right: 6, top: 6, bottom: 0, containLabel: true },
+      tooltip: { ...baseOpts().tooltip, trigger: 'axis', axisPointer: { type: 'shadow' },
+        formatter: (params) => params.map(p => `<div style="display:flex;justify-content:space-between;gap:12px;"><span style="color:${C.muted};font-size:11px;">${p.marker}${p.seriesName}</span><span style="color:${C.text};font-size:11px;">${eurShort(p.value)}</span></div>`).join('') },
       xAxis: { type: 'value', show: false },
-      yAxis: { type: 'category', data: ['Haben (Rechnungen)', 'Soll (Eingänge)'], axisLine: { show: false }, axisTick: { show: false }, axisLabel: { color: C.muted, fontSize: 11 } },
-      series: [
-        { name: 'Betrag', type: 'bar', data: [612400, 568200], barWidth: 18,
-          itemStyle: { color: (p) => p.dataIndex === 0 ? C.gold : C.success, borderRadius: [4, 4, 4, 4] },
-          label: { show: true, position: 'insideRight', color: C.text, fontSize: 10, formatter: (p) => eurShort(p.value) } },
-      ]
+      yAxis: { type: 'category', data: ['Haben (Rechn.)', 'Soll (Eingang)'], axisLine: { show: false }, axisTick: { show: false }, axisLabel: { color: C.muted, fontSize: 10 } },
+      series: [{ name: 'Betrag', type: 'bar', data: [612400, 568200], barWidth: 14,
+        itemStyle: { color: (p) => p.dataIndex === 0 ? C.gold : C.success, borderRadius: [3, 3, 3, 3] },
+        label: { show: true, position: 'insideRight', color: C.text, fontSize: 9, formatter: (p) => eurShort(p.value) } }]
     });
   }
 
@@ -823,29 +806,28 @@
     const ch = getOrInit('cltAging'); if (!ch) return;
     const buckets = [
       { name: 'aktuell', value: 18400, color: C.success },
-      { name: '0–30 d',  value: 22100, color: C.gold },
-      { name: '31–60 d', value: 14000, color: C.amber },
-      { name: '61–90 d', value:  3700, color: C.danger },
-      { name: '> 90 d',  value:     0, color: '#7B1F2A' },
+      { name: '0–30',    value: 22100, color: C.gold },
+      { name: '31–60',   value: 14000, color: C.amber },
+      { name: '61–90',   value:  3700, color: C.danger },
     ];
     ch.setOption({
       ...baseOpts(),
-      grid: { left: 0, right: 8, top: 18, bottom: 8, containLabel: true },
+      grid: { left: 0, right: 6, top: 8, bottom: 0, containLabel: true },
       tooltip: { ...baseOpts().tooltip, trigger: 'axis', axisPointer: { type: 'shadow' },
-        formatter: (params) => params.map(p => `<div style="display:flex;justify-content:space-between;gap:14px;"><span style="color:${C.muted};font-size:11px;">${p.marker}${p.seriesName}</span><span style="color:${C.text};font-size:11px;">${eurShort(p.value)}</span></div>`).join('') },
+        formatter: (params) => params.map(p => `<div style="display:flex;justify-content:space-between;gap:12px;"><span style="color:${C.muted};font-size:11px;">${p.marker}${p.seriesName}</span><span style="color:${C.text};font-size:11px;">${eurShort(p.value)}</span></div>`).join('') },
       legend: { show: false },
       xAxis: { type: 'value', show: false },
-      yAxis: { type: 'category', data: ['Forderungen'], axisLine: { show: false }, axisTick: { show: false }, axisLabel: { color: C.muted, fontSize: 11 } },
+      yAxis: { type: 'category', data: ['OPOS'], axisLine: { show: false }, axisTick: { show: false }, axisLabel: { color: C.muted, fontSize: 10 } },
       series: buckets.map((b, i) => ({
-        name: b.name, type: 'bar', stack: 'a', data: [b.value], barWidth: 22,
-        itemStyle: { color: b.color, borderRadius: i === 0 ? [4, 0, 0, 4] : i === buckets.length - 1 ? [0, 4, 4, 0] : 0 },
-        label: { show: b.value > 2500, position: 'inside', color: '#0A1628', fontWeight: 600, fontSize: 10, formatter: () => b.name }
+        name: b.name, type: 'bar', stack: 'a', data: [b.value], barWidth: 16,
+        itemStyle: { color: b.color, borderRadius: i === 0 ? [3, 0, 0, 3] : i === buckets.length - 1 ? [0, 3, 3, 0] : 0 },
+        label: { show: b.value > 2500, position: 'inside', color: '#0A1628', fontWeight: 600, fontSize: 9, formatter: () => b.name }
       }))
     });
   }
 
   // ============================================================
-  // 08 / WELT
+  // 09 / WELTKARTE
   // ============================================================
   let worldMapRegistered = false;
   function loadWorldMap() {
@@ -856,9 +838,8 @@
         'https://fastly.jsdelivr.net/gh/apache/echarts@4.9.0/map/json/world.json'
       ];
       const tryNext = (i) => {
-        if (i >= urls.length) return reject(new Error('No world map source available'));
-        fetch(urls[i])
-          .then(r => { if (!r.ok) throw new Error('fetch fail'); return r.json(); })
+        if (i >= urls.length) return reject(new Error('No world map source'));
+        fetch(urls[i]).then(r => { if (!r.ok) throw new Error('fetch fail'); return r.json(); })
           .then(geo => { echarts.registerMap('world', geo); worldMapRegistered = true; resolve(); })
           .catch(() => tryNext(i + 1));
       };
@@ -876,24 +857,22 @@
       const points = WORLD_DATA.map(d => ({ name: d.de, value: [...d.coord, d.revenue], yoy: d.yoy }));
       ch.setOption({
         ...baseOpts(),
-        tooltip: {
-          ...baseOpts().tooltip, trigger: 'item',
+        tooltip: { ...baseOpts().tooltip, trigger: 'item',
           formatter: (p) => {
             if (p.seriesType === 'scatter') {
               const yoy = p.data.yoy;
               const yoyTxt = yoy >= 0 ? `<span style="color:${C.success}">+${yoy} %</span>` : `<span style="color:${C.danger}">${yoy} %</span>`;
-              return `<div style="color:${C.text};font-weight:600;">${p.name}</div><div style="color:${C.muted};font-size:11px;margin-top:2px;">Umsatz: ${eurShort(p.value[2])}</div><div style="color:${C.muted};font-size:11px;">YoY: ${yoyTxt}</div>`;
+              return `<div style="color:${C.text};font-weight:600;">${p.name}</div><div style="color:${C.muted};font-size:11px;margin-top:1px;">${eurShort(p.value[2])} · YoY ${yoyTxt}</div>`;
             }
             return p.name;
-          }
-        },
-        geo: { map: 'world', roam: false, silent: true, left: 0, right: 0, top: 8, bottom: 8, itemStyle: { areaColor: 'rgba(45,80,146,0.22)', borderColor: 'rgba(201,169,97,0.18)' }, emphasis: { disabled: true } },
+          } },
+        geo: { map: 'world', roam: false, silent: true, left: 0, right: 0, top: 4, bottom: 4, itemStyle: { areaColor: 'rgba(45,80,146,0.22)', borderColor: 'rgba(201,169,97,0.18)' }, emphasis: { disabled: true } },
         series: [{
           name: 'Umsatz', type: 'scatter', coordinateSystem: 'geo',
-          symbolSize: (val) => Math.max(6, Math.sqrt(val[2] / maxRev) * 42),
+          symbolSize: (val) => Math.max(5, Math.sqrt(val[2] / maxRev) * 36),
           itemStyle: {
-            color: (p) => { const y = p.data.yoy; if (y >= 20) return '#5EE6A0'; if (y >= 8) return C.goldBright; if (y >= 0) return C.gold; return '#FF8FA3'; },
-            opacity: 0.85, borderColor: 'rgba(255,255,255,0.6)', borderWidth: 1, shadowBlur: 14, shadowColor: 'rgba(201,169,97,0.45)'
+            color: (p) => { const y = p.data.yoy; if (y >= 20) return C.success; if (y >= 8) return C.goldBright; if (y >= 0) return C.gold; return C.danger; },
+            opacity: 0.85, borderColor: 'rgba(255,255,255,0.6)', borderWidth: 1, shadowBlur: 12, shadowColor: 'rgba(201,169,97,0.45)'
           },
           data: points, z: 5
         }]
@@ -905,25 +884,26 @@
 
   function renderWorldBar() {
     const ch = getOrInit('worldBar'); if (!ch) return;
-    const top = [...WORLD_DATA].sort((a, b) => a.revenue - b.revenue).slice(-12);
+    const top = [...WORLD_DATA].sort((a, b) => a.revenue - b.revenue).slice(-10);
     ch.setOption({
       ...baseOpts(),
-      grid: { left: 12, right: 36, top: 10, bottom: 16, containLabel: true },
+      grid: { left: 6, right: 28, top: 6, bottom: 6, containLabel: true },
       tooltip: { ...baseOpts().tooltip, trigger: 'axis', axisPointer: { type: 'shadow' },
-        formatter: (params) => { const c = top.find(t => t.de === params[0].name); const yoyTxt = c.yoy >= 0 ? `<span style="color:${C.success};">+${c.yoy} %</span>` : `<span style="color:${C.danger};">${c.yoy} %</span>`;
-          return `<div style="color:${C.text};font-weight:600;">${c.de}</div><div style="color:${C.muted};font-size:11px;margin-top:2px;">Umsatz: ${eurShort(c.revenue)}</div><div style="color:${C.muted};font-size:11px;">YoY: ${yoyTxt}</div>`; } },
-      xAxis: { type: 'value', axisLine: { show: false }, axisTick: { show: false }, splitLine: { lineStyle: { color: C.grid } }, axisLabel: { color: C.muted, fontSize: 10, formatter: (v) => v >= 1_000_000 ? (v / 1_000_000).toFixed(1) + ' M' : (v / 1000) + ' k' } },
-      yAxis: { type: 'category', data: top.map(t => t.de), axisLine: { show: false }, axisTick: { show: false }, axisLabel: { color: C.text, fontSize: 11 } },
+        formatter: (params) => { const c = top.find(t => t.de === params[0].name);
+          const yoyTxt = c.yoy >= 0 ? `<span style="color:${C.success};">+${c.yoy} %</span>` : `<span style="color:${C.danger};">${c.yoy} %</span>`;
+          return `<div style="color:${C.text};font-weight:600;">${c.de}</div><div style="color:${C.muted};font-size:11px;margin-top:1px;">${eurShort(c.revenue)} · ${yoyTxt}</div>`; } },
+      xAxis: { type: 'value', axisLine: { show: false }, axisTick: { show: false }, splitLine: { lineStyle: { color: C.grid } }, axisLabel: { color: C.muted, fontSize: 9, formatter: (v) => v >= 1_000_000 ? (v / 1_000_000).toFixed(1) + ' M' : (v / 1000) + ' k' } },
+      yAxis: { type: 'category', data: top.map(t => t.de), axisLine: { show: false }, axisTick: { show: false }, axisLabel: { color: C.text, fontSize: 10 } },
       series: [{
-        type: 'bar', barWidth: 12,
-        data: top.map(t => ({ value: t.revenue, itemStyle: { color: t.yoy >= 20 ? '#5EE6A0' : t.yoy >= 0 ? C.gold : '#FF8FA3', borderRadius: [0, 4, 4, 0] } })),
-        label: { show: true, position: 'right', color: C.muted, fontSize: 10, formatter: (p) => eurShort(p.value) }
+        type: 'bar', barWidth: 9,
+        data: top.map(t => ({ value: t.revenue, itemStyle: { color: t.yoy >= 20 ? C.success : t.yoy >= 0 ? C.gold : C.danger, borderRadius: [0, 3, 3, 0] } })),
+        label: { show: true, position: 'right', color: C.muted, fontSize: 9, formatter: (p) => eurShort(p.value) }
       }]
     });
   }
 
   // ============================================================
-  // 09 / PIPELINE
+  // 10 / PIPELINE
   // ============================================================
   function renderPipeTrend() {
     const ch = getOrInit('pipeTrend'); if (!ch) return;
@@ -932,17 +912,17 @@
     const newMatters = [12, 9, 14, 18, 16, 22, 19, 17, 23, 21, 18, 24];
     ch.setOption({
       ...baseOpts(),
-      grid: { left: 12, right: 12, top: 16, bottom: 38, containLabel: true },
+      grid: { left: 6, right: 6, top: 6, bottom: 22, containLabel: true },
       tooltip: { ...baseOpts().tooltip, trigger: 'axis', axisPointer: { type: 'shadow' } },
-      legend: { bottom: 0, textStyle: { color: C.muted, fontSize: 11 } },
-      xAxis: { type: 'category', data: months, axisLine: { lineStyle: { color: C.axis } }, axisTick: { show: false }, axisLabel: { color: C.muted, fontSize: 11 } },
+      legend: { bottom: 0, textStyle: { color: C.muted, fontSize: 10 } },
+      xAxis: { type: 'category', data: months, axisLine: { lineStyle: { color: C.axis } }, axisTick: { show: false }, axisLabel: { color: C.muted, fontSize: 10 } },
       yAxis: [
-        { type: 'value', axisLine: { show: false }, axisTick: { show: false }, splitLine: { lineStyle: { color: C.grid } }, axisLabel: { color: C.muted } },
-        { type: 'value', axisLine: { show: false }, axisTick: { show: false }, splitLine: { show: false }, axisLabel: { color: C.muted } }
+        { type: 'value', axisLine: { show: false }, axisTick: { show: false }, splitLine: { lineStyle: { color: C.grid } }, axisLabel: { color: C.muted, fontSize: 9 } },
+        { type: 'value', axisLine: { show: false }, axisTick: { show: false }, splitLine: { show: false }, axisLabel: { color: C.muted, fontSize: 9 } }
       ],
       series: [
-        { name: 'Neue Aufträge', type: 'bar',  data: newMatters, barWidth: 18, itemStyle: { color: 'rgba(45,80,146,0.65)', borderRadius: [4, 4, 0, 0] } },
-        { name: 'Neue Mandanten', type: 'line', yAxisIndex: 1, data: newClients, smooth: true, symbol: 'circle', symbolSize: 6, lineStyle: { width: 2.5, color: C.goldBright }, itemStyle: { color: C.goldBright } }
+        { name: 'Aufträge', type: 'bar',  data: newMatters, barWidth: 14, itemStyle: { color: 'rgba(45,80,146,0.65)', borderRadius: [3, 3, 0, 0] } },
+        { name: 'Mandanten', type: 'line', yAxisIndex: 1, data: newClients, smooth: true, symbol: 'circle', symbolSize: 5, lineStyle: { width: 2, color: C.goldBright }, itemStyle: { color: C.goldBright } }
       ]
     });
   }
@@ -959,12 +939,11 @@
     const palette = ['#C9A961', '#E0BE6D', '#8E7430', '#2D5092', '#1A325A'];
     ch.setOption({
       ...baseOpts(),
-      tooltip: { ...baseOpts().tooltip, formatter: (p) => `<div style="color:${C.text};font-weight:600;">${p.name}</div><div style="color:${C.muted};font-size:11px;margin-top:2px;">${p.value} Anfragen · ${p.percent}%</div>` },
-      legend: { bottom: 0, textStyle: { color: C.muted, fontSize: 11 }, itemWidth: 10, itemHeight: 10 },
+      tooltip: { ...baseOpts().tooltip, formatter: (p) => `<div style="color:${C.text};font-weight:600;">${p.name}</div><div style="color:${C.muted};font-size:11px;margin-top:1px;">${p.value} Anfragen · ${p.percent}%</div>` },
+      legend: { bottom: 0, textStyle: { color: C.muted, fontSize: 10 }, itemWidth: 8, itemHeight: 8 },
       series: [{
-        type: 'pie', radius: ['58%', '78%'], center: ['50%', '45%'],
-        avoidLabelOverlap: true, itemStyle: { borderColor: C.navyDark, borderWidth: 2 },
-        label: { show: false }, labelLine: { show: false },
+        type: 'pie', radius: ['54%', '76%'], center: ['50%', '42%'], avoidLabelOverlap: true,
+        itemStyle: { borderColor: C.navyDark, borderWidth: 2 }, label: { show: false }, labelLine: { show: false },
         data: data.map((d, i) => ({ ...d, itemStyle: { color: palette[i] } }))
       }]
     });
@@ -979,43 +958,138 @@
       const conv = i === 0 ? '—' : Math.round(f.count / FUNNEL[i - 1].count * 100) + ' %';
       return `
         <div class="funnel-row">
-          <div class="text-sm text-slate-200">${f.name}</div>
-          <div class="h-7 rounded-md overflow-hidden bg-ink-800/60 border border-white/5">
+          <div class="text-[12px] text-slate-200">${f.name}</div>
+          <div class="h-5 rounded overflow-hidden bg-ink-800/60 border border-white/5">
             <div class="h-full" style="width:${w}%; background:${color};"></div>
           </div>
-          <div class="text-right text-sm text-slate-300 font-mono">${f.count} · ${eurShort(f.value)}</div>
-          <div class="text-right text-xs text-slate-400">${conv}</div>
+          <div class="text-right text-[11.5px] text-slate-300 font-mono">${f.count} · ${eurShort(f.value)}</div>
+          <div class="text-right text-[10.5px] text-slate-400">${conv}</div>
         </div>
       `;
-    }).join('') + `
-      <div class="funnel-row text-[10px] uppercase tracking-wider text-slate-500 pt-2 border-t border-white/5 mt-2">
-        <div>Stufe</div><div>Volumen</div><div class="text-right">Anzahl · Wert</div><div class="text-right">Konversion</div>
-      </div>
-    `;
+    }).join('') + `<div class="funnel-row text-[9px] uppercase tracking-wider text-slate-500 pt-1 border-t border-white/5 mt-1">
+        <div>Stufe</div><div>Volumen</div><div class="text-right">Anz · Wert</div><div class="text-right">Konv.</div>
+      </div>`;
   }
 
   // ============================================================
-  // 10 / BUCHUNGS-STREAM
+  // 11 / MARKETING & AKQUISE-ROI
+  // ============================================================
+  function renderRoiChannel() {
+    const ch = getOrInit('roiChannel'); if (!ch) return;
+    const data = [...ROI_CHANNELS].reverse();
+    ch.setOption({
+      ...baseOpts(),
+      grid: { left: 6, right: 28, top: 18, bottom: 6, containLabel: true },
+      tooltip: { ...baseOpts().tooltip, trigger: 'axis', axisPointer: { type: 'shadow' },
+        formatter: (params) => {
+          const r = data.find(d => d.name === params[0].name);
+          const roas = (r.revenue / r.spend).toFixed(1);
+          return `<div style="color:${C.text};font-weight:600;">${r.name}</div>` +
+            params.map(p => `<div style="display:flex;justify-content:space-between;gap:12px;color:${C.muted};font-size:11px;"><span>${p.marker}${p.seriesName}</span><span style="color:${C.text};">${eurK(p.value)}</span></div>`).join('') +
+            `<div style="color:${C.goldBright};font-weight:600;font-size:11px;margin-top:2px;">ROAS ${roas.replace('.', ',')}×</div>`;
+        } },
+      legend: { top: 0, right: 4, textStyle: { color: C.muted, fontSize: 10 }, itemWidth: 8, itemHeight: 8 },
+      xAxis: { type: 'value', axisLine: { show: false }, axisTick: { show: false }, splitLine: { lineStyle: { color: C.grid } }, axisLabel: { color: C.muted, fontSize: 9, formatter: (v) => v + ' k' } },
+      yAxis: { type: 'category', data: data.map(d => d.name), axisLine: { show: false }, axisTick: { show: false }, axisLabel: { color: C.text, fontSize: 10 } },
+      series: [
+        { name: 'Spend',   type: 'bar', barGap: '15%', barWidth: 8,
+          data: data.map(d => ({ value: d.spend, itemStyle: { color: 'rgba(255,143,163,0.7)', borderRadius: [0, 3, 3, 0] } })) },
+        { name: 'Mandanten-Umsatz', type: 'bar', barWidth: 8,
+          data: data.map(d => ({ value: d.revenue, itemStyle: { color: C.success, borderRadius: [0, 3, 3, 0] } })),
+          label: { show: true, position: 'right', color: C.muted, fontSize: 9, formatter: (p) => { const r = data[p.dataIndex]; return (r.revenue / r.spend).toFixed(1).replace('.', ',') + '×'; } } }
+      ]
+    });
+  }
+
+  function renderRoiTravel() {
+    const ch = getOrInit('roiTravel'); if (!ch) return;
+    ch.setOption({
+      ...baseOpts(),
+      grid: { left: 30, right: 14, top: 6, bottom: 24, containLabel: true },
+      tooltip: { ...baseOpts().tooltip, trigger: 'item',
+        formatter: (p) => `<div style="color:${C.text};font-weight:600;">${p.value[2]}</div><div style="color:${C.muted};font-size:11px;">Reise € ${p.value[0]} k → Neumandanten € ${p.value[1]} k</div>` },
+      xAxis: { name: 'Reisekosten YTD', nameLocation: 'middle', nameGap: 22, nameTextStyle: { color: C.muted, fontSize: 10 }, axisLine: { lineStyle: { color: C.axis } }, splitLine: { lineStyle: { color: C.grid } }, axisLabel: { color: C.muted, fontSize: 9, formatter: (v) => v + ' k' } },
+      yAxis: { name: 'Mandanten-Umsatz', nameLocation: 'middle', nameGap: 30, nameTextStyle: { color: C.muted, fontSize: 10 }, axisLine: { lineStyle: { color: C.axis } }, splitLine: { lineStyle: { color: C.grid } }, axisLabel: { color: C.muted, fontSize: 9, formatter: (v) => v + ' k' } },
+      series: [{
+        type: 'scatter', symbolSize: 13,
+        data: TRAVEL_BY_PARTNER.map(p => [p.travel, p.newRev, p.name]),
+        itemStyle: { color: C.gold, opacity: 0.9, borderColor: 'rgba(255,255,255,0.25)', borderWidth: 1 },
+        label: { show: true, position: 'top', color: C.muted, fontSize: 9, formatter: (p) => p.value[2] }
+      }]
+    });
+  }
+
+  // ============================================================
+  // 12 / LIQUIDITÄTS-FORECAST
+  // ============================================================
+  function renderLiqLine() {
+    const ch = getOrInit('liqLine'); if (!ch) return;
+    const lowIdx = LIQ_BALANCE.indexOf(Math.min(...LIQ_BALANCE.slice(1)));
+    ch.setOption({
+      ...baseOpts(),
+      grid: { left: 6, right: 6, top: 12, bottom: 18, containLabel: true },
+      tooltip: { ...baseOpts().tooltip, trigger: 'axis',
+        formatter: (params) => {
+          const i = params[0].dataIndex;
+          return `<div style="font-weight:600;color:${C.text};margin-bottom:3px;">${params[0].axisValue}</div>
+                  <div style="color:${C.muted};font-size:11px;">Eingang: <span style="color:${C.success}">+ ${eurK(LIQ_INFLOW[i])}</span></div>
+                  <div style="color:${C.muted};font-size:11px;">Ausgang: <span style="color:${C.danger}">− ${eurK(LIQ_OUTFLOW[i])}</span></div>
+                  <div style="color:${C.text};font-weight:600;font-size:11px;margin-top:2px;">Bestand: ${eurK(LIQ_BALANCE[i])}</div>`;
+        } },
+      xAxis: { type: 'category', data: LIQ_WEEKS, boundaryGap: false, axisLine: { lineStyle: { color: C.axis } }, axisTick: { show: false }, axisLabel: { color: C.muted, fontSize: 9, interval: 1 } },
+      yAxis: { type: 'value', axisLine: { show: false }, axisTick: { show: false }, splitLine: { lineStyle: { color: C.grid } }, axisLabel: { color: C.muted, fontSize: 9, formatter: (v) => v + ' k' } },
+      series: [{
+        type: 'line', smooth: true, symbol: 'circle', symbolSize: 5, data: LIQ_BALANCE,
+        lineStyle: { width: 2.2, color: C.goldBright },
+        itemStyle: { color: C.goldBright },
+        areaStyle: { color: { type: 'linear', x: 0, y: 0, x2: 0, y2: 1, colorStops: [{ offset: 0, color: 'rgba(201,169,97,0.32)' }, { offset: 1, color: 'rgba(201,169,97,0)' }] } },
+        markLine: { silent: true, symbol: 'none', label: { color: C.muted, fontSize: 9, formatter: 'Lohn-Lauf-Soll' },
+          lineStyle: { color: 'rgba(255,143,163,0.5)', type: 'dashed', width: 1 },
+          data: [{ yAxis: 520, name: 'Lohn-Lauf' }]
+        },
+        markPoint: { symbolSize: 36, itemStyle: { color: C.amber },
+          label: { color: C.navyDark, fontSize: 10, fontWeight: 700, formatter: (p) => 'Tief' },
+          data: [{ coord: [LIQ_WEEKS[lowIdx], LIQ_BALANCE[lowIdx]] }]
+        }
+      }]
+    });
+  }
+
+  function renderLiqFlow() {
+    const ch = getOrInit('liqFlow'); if (!ch) return;
+    ch.setOption({
+      ...baseOpts(),
+      grid: { left: 6, right: 6, top: 12, bottom: 24, containLabel: true },
+      tooltip: { ...baseOpts().tooltip, trigger: 'axis', axisPointer: { type: 'shadow' },
+        formatter: (params) => `<div style="font-weight:600;color:${C.text};margin-bottom:3px;">${params[0].axisValue}</div>` +
+          params.map(p => `<div style="display:flex;justify-content:space-between;gap:12px;"><span style="color:${C.muted};font-size:11px;">${p.marker}${p.seriesName}</span><span style="color:${C.text};font-size:11px;">${eurK(Math.abs(p.value))}</span></div>`).join('') },
+      legend: { bottom: 0, textStyle: { color: C.muted, fontSize: 10 }, itemWidth: 8, itemHeight: 8 },
+      xAxis: { type: 'category', data: LIQ_WEEKS, axisLine: { lineStyle: { color: C.axis } }, axisTick: { show: false }, axisLabel: { color: C.muted, fontSize: 9 } },
+      yAxis: { type: 'value', axisLine: { show: false }, axisTick: { show: false }, splitLine: { lineStyle: { color: C.grid } }, axisLabel: { color: C.muted, fontSize: 9, formatter: (v) => v + ' k' } },
+      series: [
+        { name: 'Eingang',  type: 'bar', stack: 'a', data: LIQ_INFLOW,  barWidth: 10, itemStyle: { color: C.success, borderRadius: [3, 3, 0, 0] } },
+        { name: 'Ausgang',  type: 'bar', stack: 'a', data: LIQ_OUTFLOW.map(v => -v), barWidth: 10, itemStyle: { color: 'rgba(255,143,163,0.7)', borderRadius: [3, 3, 0, 0] } }
+      ]
+    });
+  }
+
+  // ============================================================
+  // 13 / BUCHUNGS-STREAM
   // ============================================================
   function renderStreamFlow() {
     const ch = getOrInit('streamFlow'); if (!ch) return;
     const days = Array.from({ length: 30 }, (_, i) => (i + 1).toString());
-    // Synthetic debit/credit per day
-    const debit  = days.map((_, i) => -Math.round(20000 + Math.sin(i / 2) * 9000 + Math.random() * 6000));
-    const credit = days.map((_, i) =>  Math.round(28000 + Math.cos(i / 3) * 12000 + Math.random() * 7000));
+    const debit  = days.map((_, i) => -Math.round(20000 + Math.sin(i / 2) * 9000 + (i * 137 % 5000)));
+    const credit = days.map((_, i) =>  Math.round(28000 + Math.cos(i / 3) * 12000 + (i * 211 % 6000)));
     ch.setOption({
       ...baseOpts(),
-      grid: { left: 8, right: 8, top: 16, bottom: 28, containLabel: true },
-      tooltip: { ...baseOpts().tooltip, trigger: 'axis', axisPointer: { type: 'shadow' },
-        formatter: (params) => `<div style="font-weight:600;color:${C.text};margin-bottom:4px;">Tag ${params[0].axisValue}</div>` +
-          params.map(p => `<div style="display:flex;justify-content:space-between;gap:14px;"><span style="color:${C.muted};font-size:11px;">${p.marker}${p.seriesName}</span><span style="color:${C.text};font-size:11px;">${eurShort(p.value)}</span></div>`).join('')
-      },
-      legend: { bottom: 0, textStyle: { color: C.muted, fontSize: 10 }, itemWidth: 10, itemHeight: 10 },
-      xAxis: { type: 'category', data: days, axisLine: { lineStyle: { color: C.axis } }, axisTick: { show: false }, axisLabel: { color: C.muted, fontSize: 9, interval: 4 } },
-      yAxis: { type: 'value', axisLine: { show: false }, axisTick: { show: false }, splitLine: { lineStyle: { color: C.grid } }, axisLabel: { color: C.muted, fontSize: 9, formatter: (v) => v / 1000 + ' k' } },
+      grid: { left: 4, right: 4, top: 6, bottom: 6, containLabel: true },
+      tooltip: { ...baseOpts().tooltip, trigger: 'axis', axisPointer: { type: 'shadow' } },
+      xAxis: { type: 'category', data: days, axisLine: { lineStyle: { color: C.axis } }, axisTick: { show: false }, axisLabel: { color: C.muted, fontSize: 8, interval: 5 } },
+      yAxis: { type: 'value', axisLine: { show: false }, axisTick: { show: false }, splitLine: { lineStyle: { color: C.grid } }, axisLabel: { color: C.muted, fontSize: 8, formatter: (v) => v / 1000 + 'k' } },
       series: [
-        { name: 'Haben (Erlös)',  type: 'bar', data: credit, stack: 's', barWidth: 8, itemStyle: { color: C.gold } },
-        { name: 'Soll (Aufwand)', type: 'bar', data: debit,  stack: 's', barWidth: 8, itemStyle: { color: 'rgba(255,143,163,0.7)' } }
+        { name: 'Haben', type: 'bar', stack: 's', data: credit, barWidth: 6, itemStyle: { color: C.gold } },
+        { name: 'Soll',  type: 'bar', stack: 's', data: debit,  barWidth: 6, itemStyle: { color: 'rgba(255,143,163,0.7)' } }
       ]
     });
   }
@@ -1023,40 +1097,329 @@
   function renderOpsAging() {
     const ch = getOrInit('opsAging'); if (!ch) return;
     const buckets = [
-      { name: '0–30 d',  value: 312_000, color: C.success },
-      { name: '31–60 d', value: 168_000, color: C.gold },
-      { name: '61–90 d', value:  74_000, color: C.amber },
-      { name: '> 90 d',  value:  41_000, color: C.danger },
+      { name: '0–30',  value: 312_000, color: C.success },
+      { name: '31–60', value: 168_000, color: C.gold },
+      { name: '61–90', value:  74_000, color: C.amber },
+      { name: '> 90',  value:  41_000, color: C.danger },
     ];
     ch.setOption({
       ...baseOpts(),
-      grid: { left: 0, right: 8, top: 18, bottom: 8, containLabel: true },
+      grid: { left: 0, right: 6, top: 8, bottom: 0, containLabel: true },
       tooltip: { ...baseOpts().tooltip, trigger: 'axis', axisPointer: { type: 'shadow' },
-        formatter: (params) => params.map(p => `<div style="display:flex;justify-content:space-between;gap:14px;"><span style="color:${C.muted};font-size:11px;">${p.marker}${p.seriesName}</span><span style="color:${C.text};font-size:11px;">${eurShort(p.value)}</span></div>`).join('') },
+        formatter: (params) => params.map(p => `<div style="display:flex;justify-content:space-between;gap:12px;"><span style="color:${C.muted};font-size:11px;">${p.marker}${p.seriesName}</span><span style="color:${C.text};font-size:11px;">${eurShort(p.value)}</span></div>`).join('') },
       legend: { show: false },
       xAxis: { type: 'value', show: false },
-      yAxis: { type: 'category', data: ['OPOS'], axisLine: { show: false }, axisTick: { show: false }, axisLabel: { color: C.muted, fontSize: 11 } },
+      yAxis: { type: 'category', data: ['OPOS'], axisLine: { show: false }, axisTick: { show: false }, axisLabel: { color: C.muted, fontSize: 10 } },
       series: buckets.map((b, i) => ({
-        name: b.name, type: 'bar', stack: 'a', data: [b.value], barWidth: 22,
-        itemStyle: { color: b.color, borderRadius: i === 0 ? [4, 0, 0, 4] : i === buckets.length - 1 ? [0, 4, 4, 0] : 0 },
-        label: { show: true, position: 'inside', color: '#0A1628', fontWeight: 600, fontSize: 10, formatter: () => b.name }
+        name: b.name, type: 'bar', stack: 'a', data: [b.value], barWidth: 16,
+        itemStyle: { color: b.color, borderRadius: i === 0 ? [3, 0, 0, 3] : i === buckets.length - 1 ? [0, 3, 3, 0] : 0 },
+        label: { show: true, position: 'inside', color: '#0A1628', fontWeight: 600, fontSize: 9, formatter: () => b.name }
       }))
     });
   }
 
   // ============================================================
-  // SCROLLSPY (Side index)
+  // 14 / BRIEFING-BIBLIOTHEK
+  // ============================================================
+  const TEMPLATES = {
+    quartal: {
+      title: 'Quartals-Briefing',
+      desc:  'Partner-Briefing für die Gesellschafter-Versammlung',
+      cover: `
+        <div class="flex items-center gap-2 text-[9px] tracking-[0.3em] uppercase text-ink-800/80">
+          <span class="grid place-items-center w-5 h-5 rounded bg-ink-950">
+            <svg viewBox="0 0 24 24" class="w-3 h-3" fill="none" stroke="#E0BE6D" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 17 L3 7 L8 11 L12 7 L17 13 L21 9"/></svg>
+          </span>KanzleiCockpit · Partner-Briefing
+        </div>
+        <div class="mt-auto">
+          <div class="text-[10px] text-ink-800/70">Brenner &amp; Voss Partner mbB</div>
+          <div class="font-display text-3xl mt-1.5 leading-tight">Quartal 2 · 2026</div>
+          <div class="font-display text-sm mt-0.5 italic text-ink-800/80">Wirtschaftliche Lage und Mandantenstruktur</div>
+          <div class="mt-4 grid grid-cols-3 gap-3 border-t border-ink-950/15 pt-3">
+            <div><div class="text-[9px] uppercase tracking-wider text-ink-800/70">Umsatz</div><div class="font-display text-lg mt-0.5">€ 7,42 M</div></div>
+            <div><div class="text-[9px] uppercase tracking-wider text-ink-800/70">Marge</div><div class="font-display text-lg mt-0.5">57,1 %</div></div>
+            <div><div class="text-[9px] uppercase tracking-wider text-ink-800/70">Realiz.</div><div class="font-display text-lg mt-0.5">87,3 %</div></div>
+          </div>
+          <div class="text-[9px] text-ink-800/60 mt-4">Vertraulich · Nur für Gesellschafter · 30.06.2026</div>
+        </div>`,
+      inside: `
+        <div class="flex items-center justify-between text-[9px] tracking-[0.2em] uppercase text-ink-800/70 border-b border-ink-950/15 pb-1.5">
+          <span>Q2 2026 · Lage &amp; Trends</span><span>Seite 3 / 14</span>
+        </div>
+        <h3 class="font-display text-base mt-2.5">1. Wirtschaftliche Entwicklung</h3>
+        <p class="text-[11px] text-ink-800/80 mt-1 leading-relaxed">
+          Quartalsumsatz € 7,42 M, +11,4 % YoY. Treiber sind Patente (+14,2 %) und Litigation (+18,7 %).
+          Verwaltungsumsätze unverändert.
+        </p>
+        <div class="grid grid-cols-3 gap-2 mt-3">
+          <div class="rounded border border-ink-950/12 p-1.5"><div class="text-[8px] uppercase tracking-wider text-ink-800/70">Patente</div><div class="font-display text-sm mt-0.5">€ 4,11 M</div><div class="text-[9px] text-emerald-700">+14,2 %</div></div>
+          <div class="rounded border border-ink-950/12 p-1.5"><div class="text-[8px] uppercase tracking-wider text-ink-800/70">Litigation</div><div class="font-display text-sm mt-0.5">€ 1,02 M</div><div class="text-[9px] text-emerald-700">+18,7 %</div></div>
+          <div class="rounded border border-ink-950/12 p-1.5"><div class="text-[8px] uppercase tracking-wider text-ink-800/70">Marken</div><div class="font-display text-sm mt-0.5">€ 1,52 M</div><div class="text-[9px] text-emerald-700">+4,1 %</div></div>
+        </div>
+        <h3 class="font-display text-base mt-4">2. Beobachtungen</h3>
+        <ul class="text-[11px] text-ink-800/80 mt-1 space-y-0.5 list-disc pl-4">
+          <li>Hanwool Display (KR) entwickelt sich zum Top-10-Mandanten — +41 % YoY.</li>
+          <li>Kymera Software (UK) zweites rückläufiges Quartal in Folge (−18 %).</li>
+          <li>Hofbauer / Dornstetter strukturell &gt; 90 % — Backup-Kapazität bilden.</li>
+          <li>Marketing+Reisen 2,9 % vom Umsatz, ROAS 6,7× — Budget kann erhöht werden.</li>
+        </ul>
+        <div class="mt-auto pt-3 border-t border-ink-950/15 flex items-center justify-between text-[9px] text-ink-800/60">
+          <span>Brenner &amp; Voss Partner mbB</span><span>Vertraulich</span>
+        </div>`
+    },
+
+    onepager: {
+      title: 'Mandanten-Onepager',
+      desc:  'Briefing vor dem Termin · Helios Pharma AG',
+      cover: `
+        <div class="flex items-center gap-2 text-[9px] tracking-[0.3em] uppercase text-ink-800/80">
+          <span class="grid place-items-center w-5 h-5 rounded bg-ink-950">
+            <svg viewBox="0 0 24 24" class="w-3 h-3" fill="none" stroke="#E0BE6D" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 17 L3 7 L8 11 L12 7 L17 13 L21 9"/></svg>
+          </span>Mandanten-Briefing
+        </div>
+        <div class="mt-auto">
+          <div class="text-[10px] text-ink-800/70">Brenner &amp; Voss Partner mbB</div>
+          <div class="font-display text-2xl mt-1.5 leading-tight">Helios Pharma AG</div>
+          <div class="font-display text-xs mt-0.5 italic text-ink-800/80">Vor dem Jour-Fixe am 15.07.2026</div>
+          <div class="mt-3 grid grid-cols-2 gap-2 border-t border-ink-950/15 pt-3">
+            <div><div class="text-[9px] uppercase tracking-wider text-ink-800/70">Umsatz YTD</div><div class="font-display text-base mt-0.5">€ 612 k</div><div class="text-[9px] text-emerald-700">+24 % YoY</div></div>
+            <div><div class="text-[9px] uppercase tracking-wider text-ink-800/70">Aufträge YTD</div><div class="font-display text-base mt-0.5">84</div><div class="text-[9px] text-emerald-700">+24 %</div></div>
+            <div><div class="text-[9px] uppercase tracking-wider text-ink-800/70">Offene Akten</div><div class="font-display text-base mt-0.5">12</div><div class="text-[9px] text-ink-800/70">davon 4 in Frist</div></div>
+            <div><div class="text-[9px] uppercase tracking-wider text-ink-800/70">OPOS &gt; 30 Tg</div><div class="font-display text-base mt-0.5">€ 3,7 k</div><div class="text-[9px] text-emerald-700">unkritisch</div></div>
+          </div>
+          <div class="mt-3 text-[10px] text-ink-800/80">
+            <div><strong>Mandant seit:</strong> 2014 · 12 Jahre Beziehung</div>
+            <div><strong>Verantw. Partner:</strong> Dr. Brenner</div>
+            <div><strong>Branche:</strong> Pharma &amp; Biotech · Deutschland</div>
+            <div><strong>Letzter Termin:</strong> 03.04.2026 (Quartals-Update)</div>
+          </div>
+          <div class="text-[9px] text-ink-800/60 mt-3">Vertraulich · Nur für vorbereitenden Partner</div>
+        </div>`,
+      inside: `
+        <div class="flex items-center justify-between text-[9px] tracking-[0.2em] uppercase text-ink-800/70 border-b border-ink-950/15 pb-1.5">
+          <span>Helios Pharma · Lage &amp; Gesprächsbausteine</span><span>2 / 2</span>
+        </div>
+        <h3 class="font-display text-sm mt-2.5">Beziehung 2014 → heute</h3>
+        <div class="text-[11px] text-ink-800/80 mt-1 leading-relaxed">
+          Volumen seit 2020 verdoppelt. 2026 erstmals &gt; € 1 M Run-Rate erwartet.
+          Schwerpunkt: EP-Anmeldungen Wirkstoff-Patente, zunehmend US/JP-Erweiterungen.
+        </div>
+        <h3 class="font-display text-sm mt-3">Aktuelle Lage</h3>
+        <ul class="text-[11px] text-ink-800/80 mt-1 space-y-0.5 list-disc pl-4">
+          <li>12 offene Akten, 4 mit Frist (P-2024-0247 US in 14 Tg, M-2025-0012 EU in 3 Tg).</li>
+          <li>Letzte Rechnung 28.06. (€ 28 400) — bezahlt 28.06., pünktlich.</li>
+          <li>70 % Stunden auf Brenner + Hofbauer — <em class="not-italic text-amber-700">Konzentrationsrisiko</em>.</li>
+          <li>Realization 92 % — Top-Quartil, kaum Abschriften.</li>
+        </ul>
+        <h3 class="font-display text-sm mt-3">Gesprächsbausteine</h3>
+        <ul class="text-[11px] text-ink-800/80 mt-1 space-y-0.5 list-disc pl-4">
+          <li>Kapazitäts-Erweiterung 2026 H2 — Backup-Anwalt für Brenner-Linie.</li>
+          <li>JP-Strategie weiter ausbauen (Sumire-Kontext nutzen).</li>
+          <li>Litigation-Praxis vorstellen — bisher nicht im Mandat.</li>
+          <li>Dankesnotiz für 2025-Empfehlung an NovExa.</li>
+        </ul>
+        <div class="mt-auto pt-3 border-t border-ink-950/15 flex items-center justify-between text-[9px] text-ink-800/60">
+          <span>Brenner &amp; Voss Partner mbB</span><span>Stand 30.06.2026</span>
+        </div>`
+    },
+
+    partner: {
+      title: 'Partner-Jahresgespräch',
+      desc:  'Halbjahres-Review · Dr. Brenner',
+      cover: `
+        <div class="flex items-center gap-2 text-[9px] tracking-[0.3em] uppercase text-ink-800/80">
+          <span class="grid place-items-center w-5 h-5 rounded bg-ink-950">
+            <svg viewBox="0 0 24 24" class="w-3 h-3" fill="none" stroke="#E0BE6D" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 17 L3 7 L8 11 L12 7 L17 13 L21 9"/></svg>
+          </span>Partnerschafts-Review
+        </div>
+        <div class="mt-auto">
+          <div class="text-[10px] text-ink-800/70">Brenner &amp; Voss Partner mbB</div>
+          <div class="font-display text-2xl mt-1.5 leading-tight">Dr. Markus Brenner</div>
+          <div class="font-display text-xs mt-0.5 italic text-ink-800/80">Halbjahres-Gespräch · 2026 H1</div>
+          <div class="mt-4 grid grid-cols-2 gap-2 border-t border-ink-950/15 pt-3">
+            <div><div class="text-[9px] uppercase tracking-wider text-ink-800/70">Beitrag YTD</div><div class="font-display text-base mt-0.5">€ 1,84 M</div><div class="text-[9px] text-emerald-700">+12 % YoY</div></div>
+            <div><div class="text-[9px] uppercase tracking-wider text-ink-800/70">Mandanten</div><div class="font-display text-base mt-0.5">47</div><div class="text-[9px] text-ink-800/70">+5 neue</div></div>
+            <div><div class="text-[9px] uppercase tracking-wider text-ink-800/70">Stunden YTD</div><div class="font-display text-base mt-0.5">1 180 h</div><div class="text-[9px] text-amber-700">96 % Auslast.</div></div>
+            <div><div class="text-[9px] uppercase tracking-wider text-ink-800/70">Realization</div><div class="font-display text-base mt-0.5">93 %</div><div class="text-[9px] text-emerald-700">Top-3 Partner</div></div>
+          </div>
+          <div class="mt-3 text-[10px] text-ink-800/80">
+            <div><strong>Equity-Status:</strong> Senior Equity Partner (seit 2018)</div>
+            <div><strong>Department:</strong> Patente · Co-Lead</div>
+            <div><strong>Mentee-Anwälte:</strong> Hofbauer, Cremer, Albers</div>
+          </div>
+          <div class="text-[9px] text-ink-800/60 mt-3">Persönlich · Nur Gesellschafter-Vorsitz</div>
+        </div>`,
+      inside: `
+        <div class="flex items-center justify-between text-[9px] tracking-[0.2em] uppercase text-ink-800/70 border-b border-ink-950/15 pb-1.5">
+          <span>Dr. Brenner · Beitrag, Portfolio, Team</span><span>2 / 6</span>
+        </div>
+        <h3 class="font-display text-sm mt-2.5">1. Wirtschaftlicher Beitrag</h3>
+        <p class="text-[11px] text-ink-800/80 mt-1 leading-relaxed">
+          € 1,84 M Beitrag YTD, höchster aller Partner. Wachstum getrieben durch Helios Pharma
+          (+€ 118 k) und 2 strategische Neumandate (Apex Quantum, Veritex BioWorks).
+        </p>
+        <h3 class="font-display text-sm mt-3">2. Mandanten-Portfolio</h3>
+        <ul class="text-[11px] text-ink-800/80 mt-1 space-y-0.5 list-disc pl-4">
+          <li>Top-3: Helios Pharma € 612 k · NovExa € 387 k · Kymera € 313 k.</li>
+          <li>Konzentration: Top-3 = 71 % — über Schwellenwert (60 %).</li>
+          <li>Diversifizierung empfohlen — Pipeline 2 Q3-Pitches.</li>
+        </ul>
+        <h3 class="font-display text-sm mt-3">3. Mentoring &amp; Team</h3>
+        <ul class="text-[11px] text-ink-800/80 mt-1 space-y-0.5 list-disc pl-4">
+          <li>Hofbauer (Mentee): 340 h Zuarbeit, 96 % Auslastung — <em class="not-italic text-amber-700">Backup vorbereiten</em>.</li>
+          <li>Cremer, Albers: stabile Entwicklung.</li>
+        </ul>
+        <h3 class="font-display text-sm mt-3">4. Diskussionspunkte</h3>
+        <ul class="text-[11px] text-ink-800/80 mt-1 space-y-0.5 list-disc pl-4">
+          <li>Reise-Pitch-Budget Q3 (US-Reise NovExa-Erweiterung).</li>
+          <li>Nachfolge-Planung Helios — sekundärer Partner aufbauen.</li>
+          <li>Equity-Anteils-Anpassung beim Jahres-Review im November.</li>
+        </ul>
+        <div class="mt-auto pt-3 border-t border-ink-950/15 flex items-center justify-between text-[9px] text-ink-800/60">
+          <span>Persönlich</span><span>Stand 30.06.2026</span>
+        </div>`
+    },
+
+    bench: {
+      title: 'Bench-Report',
+      desc:  'Auslastung &amp; Kapazität · Stand 30 Tage',
+      cover: `
+        <div class="flex items-center gap-2 text-[9px] tracking-[0.3em] uppercase text-ink-800/80">
+          <span class="grid place-items-center w-5 h-5 rounded bg-ink-950">
+            <svg viewBox="0 0 24 24" class="w-3 h-3" fill="none" stroke="#E0BE6D" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 17 L3 7 L8 11 L12 7 L17 13 L21 9"/></svg>
+          </span>Auslastungs-Report
+        </div>
+        <div class="mt-auto">
+          <div class="text-[10px] text-ink-800/70">Brenner &amp; Voss Partner mbB</div>
+          <div class="font-display text-2xl mt-1.5 leading-tight">Bench-Report</div>
+          <div class="font-display text-xs mt-0.5 italic text-ink-800/80">Kapazität &amp; Auslastung · 30 Tage</div>
+          <div class="mt-4 grid grid-cols-3 gap-2 border-t border-ink-950/15 pt-3">
+            <div><div class="text-[9px] uppercase tracking-wider text-ink-800/70">Ø Auslastung</div><div class="font-display text-base mt-0.5">84 %</div></div>
+            <div><div class="text-[9px] uppercase tracking-wider text-ink-800/70">Über Soll</div><div class="font-display text-base mt-0.5 text-amber-700">4 BT</div></div>
+            <div><div class="text-[9px] uppercase tracking-wider text-ink-800/70">Unter Soll</div><div class="font-display text-base mt-0.5 text-emerald-700">3 BT</div></div>
+          </div>
+          <div class="mt-4 text-[10px] text-ink-800/80">
+            Vorlage für die monatliche Ressourcen-Sitzung. Listet Berufsträger, deren Auslastung
+            außerhalb des Zielbands liegt, mit Empfehlungen pro Person.
+          </div>
+          <div class="text-[9px] text-ink-800/60 mt-4">Stand 30.06.2026 · Nur Partner-Versammlung</div>
+        </div>`,
+      inside: `
+        <div class="flex items-center justify-between text-[9px] tracking-[0.2em] uppercase text-ink-800/70 border-b border-ink-950/15 pb-1.5">
+          <span>Bench-Report · Empfehlungen</span><span>2 / 4</span>
+        </div>
+        <h3 class="font-display text-sm mt-2.5 text-amber-700">Über-ausgelastet (&gt; 92 %)</h3>
+        <table class="w-full text-[11px] mt-1.5">
+          <thead class="text-[9px] uppercase tracking-wider text-ink-800/70"><tr><th class="text-left py-1">Person</th><th class="text-left py-1">Rolle</th><th class="text-right py-1">Aus.</th><th class="text-left py-1">Empfehlung</th></tr></thead>
+          <tbody class="divide-y divide-ink-950/10">
+            <tr><td class="py-1">Dr. Brenner</td><td class="py-1">Partner</td><td class="py-1 text-right">96 %</td><td class="py-1">Hofbauer als Backup auf Helios.</td></tr>
+            <tr><td class="py-1">Hofbauer</td><td class="py-1">Associate</td><td class="py-1 text-right">96 %</td><td class="py-1">Akten reduzieren / Cremer einbinden.</td></tr>
+            <tr><td class="py-1">Mertens</td><td class="py-1">Partner</td><td class="py-1 text-right">95 %</td><td class="py-1">Realization 78 % — Tarif-Review.</td></tr>
+            <tr><td class="py-1">Dornstetter</td><td class="py-1">Associate</td><td class="py-1 text-right">94 %</td><td class="py-1">Jelinek übernimmt 2 Litigation-Akten.</td></tr>
+          </tbody>
+        </table>
+        <h3 class="font-display text-sm mt-3 text-emerald-700">Unter-ausgelastet (&lt; 75 %)</h3>
+        <table class="w-full text-[11px] mt-1.5">
+          <thead class="text-[9px] uppercase tracking-wider text-ink-800/70"><tr><th class="text-left py-1">Person</th><th class="text-left py-1">Rolle</th><th class="text-right py-1">Aus.</th><th class="text-left py-1">Empfehlung</th></tr></thead>
+          <tbody class="divide-y divide-ink-950/10">
+            <tr><td class="py-1">Eckert</td><td class="py-1">Associate</td><td class="py-1 text-right">70 %</td><td class="py-1">Akquise-Briefing für Apex Quantum.</td></tr>
+            <tr><td class="py-1">Gerlach</td><td class="py-1">Associate</td><td class="py-1 text-right">72 %</td><td class="py-1">Litigation-Backup für Dornstetter.</td></tr>
+            <tr><td class="py-1">Neuhaus</td><td class="py-1">Associate</td><td class="py-1 text-right">75 %</td><td class="py-1">Marken-Recherchen Lange übernehmen.</td></tr>
+          </tbody>
+        </table>
+        <div class="mt-auto pt-3 border-t border-ink-950/15 flex items-center justify-between text-[9px] text-ink-800/60">
+          <span>Brenner &amp; Voss Partner mbB</span><span>Stand 30.06.2026</span>
+        </div>`
+    },
+
+    liquid: {
+      title: 'Liquiditäts-Memo',
+      desc:  'CFO-Briefing · Cashflow KW 25–37',
+      cover: `
+        <div class="flex items-center gap-2 text-[9px] tracking-[0.3em] uppercase text-ink-800/80">
+          <span class="grid place-items-center w-5 h-5 rounded bg-ink-950">
+            <svg viewBox="0 0 24 24" class="w-3 h-3" fill="none" stroke="#E0BE6D" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 17 L3 7 L8 11 L12 7 L17 13 L21 9"/></svg>
+          </span>Liquiditäts-Memo
+        </div>
+        <div class="mt-auto">
+          <div class="text-[10px] text-ink-800/70">Brenner &amp; Voss Partner mbB · Treasury</div>
+          <div class="font-display text-2xl mt-1.5 leading-tight">13-Wochen-Forecast</div>
+          <div class="font-display text-xs mt-0.5 italic text-ink-800/80">KW 25 – KW 37 · 2026</div>
+          <div class="mt-4 grid grid-cols-3 gap-2 border-t border-ink-950/15 pt-3">
+            <div><div class="text-[9px] uppercase tracking-wider text-ink-800/70">Heute</div><div class="font-display text-base mt-0.5">€ 1,20 M</div></div>
+            <div><div class="text-[9px] uppercase tracking-wider text-ink-800/70">Tief KW 37</div><div class="font-display text-base mt-0.5 text-amber-700">€ 522 k</div></div>
+            <div><div class="text-[9px] uppercase tracking-wider text-ink-800/70">Marge</div><div class="font-display text-base mt-0.5">~ 1 Mt</div></div>
+          </div>
+          <div class="mt-4 text-[10px] text-ink-800/80">
+            An: Geschäftsführung, geMnG · Empfehlung zu Kreditrahmen, Honorar-Vorschüssen
+            und Steuer-Vorauszahlungs-Stundung beigefügt.
+          </div>
+          <div class="text-[9px] text-ink-800/60 mt-4">Vertraulich · 30.06.2026</div>
+        </div>`,
+      inside: `
+        <div class="flex items-center justify-between text-[9px] tracking-[0.2em] uppercase text-ink-800/70 border-b border-ink-950/15 pb-1.5">
+          <span>Risiko-Wochen &amp; Empfehlungen</span><span>2 / 3</span>
+        </div>
+        <h3 class="font-display text-sm mt-2.5">Risiko-Wochen</h3>
+        <ul class="text-[11px] text-ink-800/80 mt-1 space-y-0.5 list-disc pl-4">
+          <li><strong>KW 35</strong>: USt-VA Q2 (€ 350 k) am 10.09., direkt vor Lohn-Lauf September. Bestand sinkt auf € 1,08 M.</li>
+          <li><strong>KW 36</strong>: ESt-Vorauszahlung Q3 (€ 280 k). Bestand € 919 k.</li>
+          <li><strong>KW 37</strong>: Lohn-Lauf Oktober + Miete (€ 552 k). Tiefster Punkt € 522 k — knapp über einem Lohn-Lauf-Soll.</li>
+        </ul>
+        <h3 class="font-display text-sm mt-3">Empfehlungen</h3>
+        <ol class="text-[11px] text-ink-800/80 mt-1 space-y-0.5 list-decimal pl-4">
+          <li>Kontokorrent-Linie auf € 500 k aufstocken (aktuell € 200 k) — Kosten ~€ 1,5 k p.a.</li>
+          <li>Honorar-Vorschüsse für 2 Großmandanten (Helios, Sumire) für Q3 anstreben.</li>
+          <li>Auszahlung Gewinnvorab an Partner um eine Woche in KW 38 verschieben.</li>
+          <li>Reise-Budget Q3 priorisieren auf hochwahrscheinliche Pitches.</li>
+        </ol>
+        <h3 class="font-display text-sm mt-3 text-rose-700">Stresstest −10 %</h3>
+        <p class="text-[11px] text-ink-800/80 mt-1 leading-relaxed">
+          Wenn 10 % der OPOS um 30 Tage verspätet eingehen, fällt das KW 37-Tief auf € 188 k —
+          unterhalb eines Lohn-Lauf-Solls. <strong>Ohne erweiterte Kontokorrent-Linie nicht tragbar.</strong>
+        </p>
+        <div class="mt-auto pt-3 border-t border-ink-950/15 flex items-center justify-between text-[9px] text-ink-800/60">
+          <span>Brenner &amp; Voss · Treasury</span><span>Vertraulich</span>
+        </div>`
+    },
+  };
+
+  function renderTemplateList() {
+    const root = document.getElementById('tplList'); if (!root) return;
+    root.innerHTML = Object.entries(TEMPLATES).map(([id, t], i) => `
+      <div class="tpl-item ${id === state.activeTpl ? 'active' : ''}" data-tpl="${id}">
+        <span class="num">0${i + 1}</span>
+        <div>
+          <div class="lbl">${t.title}</div>
+          <div class="desc">${t.desc}</div>
+        </div>
+      </div>
+    `).join('');
+    root.querySelectorAll('.tpl-item').forEach(el => {
+      el.addEventListener('click', () => {
+        state.activeTpl = el.dataset.tpl;
+        renderTemplateList();
+        renderTemplatePages();
+      });
+    });
+  }
+
+  function renderTemplatePages() {
+    const t = TEMPLATES[state.activeTpl]; if (!t) return;
+    const cover = document.getElementById('pdfCover');
+    const inside = document.getElementById('pdfInside');
+    if (cover)  cover.innerHTML  = t.cover;
+    if (inside) inside.innerHTML = t.inside;
+  }
+
+  // ============================================================
+  // SCROLLSPY
   // ============================================================
   function setupScrollspy() {
     const links = Array.from(document.querySelectorAll('#sideNav .side-link'));
     const sections = links.map(l => document.getElementById(l.dataset.target)).filter(Boolean);
-    if (!('IntersectionObserver' in window) || !sections.length) {
-      links[0]?.classList.add('active');
-      return;
-    }
-    const setActive = (id) => {
-      links.forEach(l => l.classList.toggle('active', l.dataset.target === id));
-    };
+    if (!('IntersectionObserver' in window) || !sections.length) { links[0]?.classList.add('active'); return; }
+    const setActive = (id) => links.forEach(l => l.classList.toggle('active', l.dataset.target === id));
     const visibility = new Map();
     const io = new IntersectionObserver((entries) => {
       entries.forEach(e => visibility.set(e.target.id, e.intersectionRatio));
@@ -1073,51 +1436,38 @@
   // ============================================================
   function boot() {
     // 02 Cockpit
-    renderCockpitTrend();
-    renderCockpitDept();
-
-    // 03 Abteilungen
+    renderCockpitTrend(); renderCockpitDept();
+    // 03 Kosten-Struktur
+    renderCostStack(); renderCostDonut(); renderCostYoy();
+    // 04 Abteilungen
     document.getElementById('abtFilterClear')?.addEventListener('click', () => { state.deptFilter = null; refreshAbteilungen(); });
     refreshAbteilungen();
-
-    // 04 Anwälte
+    // 05 Anwälte
     document.getElementById('partnerFilterClear')?.addEventListener('click', () => { state.partnerFilter = null; refreshAnwaelte(); });
     refreshAnwaelte();
-
-    // 05 Profil
-    renderProfHours();
-    renderProfClients();
-
-    // 06 Mandanten-Liste
-    setupMandantenControls();
-    renderClientsTable();
-
-    // 07 Mandanten-Detail
-    renderClientLine();
-    renderClientSH();
-    renderClientAging();
-
-    // 08 Welt
+    // 06 Profil
+    renderProfHours(); renderProfClients();
+    // 07 Liste
+    setupMandantenControls(); renderClientsTable();
+    // 08 Detail
+    renderClientLine(); renderClientSH(); renderClientAging();
+    // 09 Welt
     document.getElementById('worldRetry')?.addEventListener('click', (e) => { e.preventDefault(); worldMapRegistered = false; renderWorldMap(); });
-    renderWorldMap();
-    renderWorldBar();
-
-    // 09 Pipeline
-    renderPipeTrend();
-    renderPipeSource();
-    renderPipeFunnel();
-
-    // 10 Buchungs-Stream
-    renderStreamFlow();
-    renderOpsAging();
-
-    // Side index scrollspy
+    renderWorldMap(); renderWorldBar();
+    // 10 Pipeline
+    renderPipeTrend(); renderPipeSource(); renderPipeFunnel();
+    // 11 Marketing-ROI
+    renderRoiChannel(); renderRoiTravel();
+    // 12 Liquidität
+    renderLiqLine(); renderLiqFlow();
+    // 13 Buchungs-Stream
+    renderStreamFlow(); renderOpsAging();
+    // 14 Briefings
+    renderTemplateList(); renderTemplatePages();
+    // Scrollspy
     setupScrollspy();
   }
 
-  if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', boot);
-  } else {
-    boot();
-  }
+  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', boot);
+  else boot();
 })();
