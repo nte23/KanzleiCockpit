@@ -1,0 +1,1072 @@
+<!doctype html>
+<html lang="de">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>KanzleiCockpit – Das Finanz-Cockpit für Patentanwaltskanzleien</title>
+  <meta name="description" content="KanzleiCockpit verwandelt Ihren Datev-Export in das Finanz-Cockpit, das Managing Partner immer wollten. Abteilungen, Anwälte, Mandanten, Märkte – eine Visualisierung." />
+  <meta name="theme-color" content="#060E1F" />
+  <meta property="og:title" content="KanzleiCockpit – Datev sieht Zahlen. Wir sehen Antworten." />
+  <meta property="og:description" content="Das Finanz-Cockpit für moderne Patentanwaltskanzleien. Aus Datev-Export wird Entscheidungsgrundlage." />
+  <meta property="og:type" content="website" />
+
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='12' fill='%23060E1F'/%3E%3Cpath d='M14 44 V20 L24 30 L32 22 L42 34 L50 26' stroke='%23C9A961' stroke-width='3.5' fill='none' stroke-linecap='round' stroke-linejoin='round'/%3E%3Ccircle cx='50' cy='26' r='3' fill='%23C9A961'/%3E%3C/svg%3E" />
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600;9..144,700&family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://cdn.jsdelivr.net/npm/echarts@5.4.3/dist/echarts.min.js"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['Inter', 'system-ui', 'sans-serif'],
+            display: ['Fraunces', 'Georgia', 'serif']
+          },
+          colors: {
+            ink: {
+              975: '#04091A',
+              950: '#060E1F',
+              900: '#0A1628',
+              850: '#0D1B33',
+              800: '#11213D',
+              750: '#152949',
+              700: '#1A325A',
+              600: '#223F73',
+              500: '#2D5092',
+            },
+            gold: {
+              50:  '#FBF6E6',
+              100: '#F4E9C2',
+              200: '#E8D58A',
+              300: '#D9BE5A',
+              400: '#C9A961',
+              500: '#B6953E',
+              600: '#8E7430',
+              700: '#665323',
+            },
+          },
+          boxShadow: {
+            'glow-gold': '0 0 0 1px rgba(201,169,97,0.25), 0 10px 40px -10px rgba(201,169,97,0.35)',
+            'card': '0 1px 0 0 rgba(255,255,255,0.04) inset, 0 20px 50px -20px rgba(0,0,0,0.6)',
+          }
+        }
+      }
+    };
+  </script>
+
+  <style>
+    :root {
+      --gold: #C9A961;
+      --gold-bright: #E0BE6D;
+      --ink-950: #060E1F;
+      --ink-900: #0A1628;
+      --ink-800: #11213D;
+      --ink-700: #1A325A;
+      --line: rgba(201, 169, 97, 0.14);
+      --line-strong: rgba(201, 169, 97, 0.32);
+    }
+
+    html { scroll-behavior: smooth; }
+
+    body {
+      background-color: var(--ink-950);
+      background-image:
+        radial-gradient(ellipse 80% 50% at 50% -10%, rgba(201, 169, 97, 0.10), transparent 60%),
+        radial-gradient(ellipse 60% 40% at 100% 30%, rgba(45, 80, 146, 0.15), transparent 60%),
+        radial-gradient(ellipse 60% 40% at 0% 70%, rgba(45, 80, 146, 0.12), transparent 60%);
+      background-attachment: fixed;
+    }
+
+    .font-display { font-family: 'Fraunces', Georgia, serif; font-optical-sizing: auto; }
+
+    /* Subtle hairline grid background for cards */
+    .bg-grid {
+      background-image:
+        linear-gradient(to right, rgba(201,169,97,0.04) 1px, transparent 1px),
+        linear-gradient(to bottom, rgba(201,169,97,0.04) 1px, transparent 1px);
+      background-size: 32px 32px;
+    }
+
+    /* Gradient text */
+    .text-gold-gradient {
+      background: linear-gradient(135deg, #E0BE6D 0%, #C9A961 40%, #B6953E 100%);
+      -webkit-background-clip: text;
+      background-clip: text;
+      -webkit-text-fill-color: transparent;
+      color: transparent;
+    }
+
+    /* Hero glow ring */
+    .ring-gold-soft {
+      box-shadow:
+        0 0 0 1px rgba(201, 169, 97, 0.25),
+        0 0 60px -10px rgba(201, 169, 97, 0.35),
+        0 30px 80px -30px rgba(0, 0, 0, 0.8);
+    }
+
+    /* Animated marquee bar */
+    @keyframes ticker {
+      0%   { transform: translateX(0); }
+      100% { transform: translateX(-50%); }
+    }
+    .ticker-track {
+      animation: ticker 60s linear infinite;
+    }
+
+    /* Tab pill */
+    .tab-pill {
+      position: relative;
+      transition: color .2s ease, background-color .2s ease;
+    }
+    .tab-pill[aria-selected="true"] {
+      background: linear-gradient(180deg, rgba(201,169,97,0.18), rgba(201,169,97,0.06));
+      color: #F4E9C2;
+      box-shadow: inset 0 0 0 1px rgba(201,169,97,0.45);
+    }
+
+    /* KPI card hover */
+    .kpi {
+      transition: transform .25s ease, border-color .25s ease, background-color .25s ease;
+    }
+    .kpi:hover {
+      transform: translateY(-2px);
+      border-color: rgba(201,169,97,0.4);
+    }
+
+    /* Soft scroll-snap for the demo phone preview */
+    .no-scrollbar::-webkit-scrollbar { display: none; }
+    .no-scrollbar { scrollbar-width: none; }
+
+    /* Faux window chrome */
+    .window-chrome {
+      background:
+        linear-gradient(180deg, rgba(255,255,255,0.04), rgba(255,255,255,0)),
+        linear-gradient(180deg, #0F1E36 0%, #0A1628 100%);
+      border: 1px solid rgba(201,169,97,0.18);
+    }
+
+    /* Trend arrows */
+    .trend-up   { color: #5EE6A0; }
+    .trend-down { color: #FF8FA3; }
+
+    /* Hero stat row dividers */
+    .divide-gold > * + * { border-left: 1px solid rgba(201,169,97,0.18); }
+
+    /* Reveal on scroll */
+    .reveal { opacity: 0; transform: translateY(16px); transition: opacity .8s ease, transform .8s ease; }
+    .reveal.in { opacity: 1; transform: none; }
+
+    /* Sortable table head */
+    th.sortable { cursor: pointer; user-select: none; }
+    th.sortable:hover { color: #E0BE6D; }
+    th .sort-arrow { opacity: .35; margin-left: .25rem; font-size: .75em; }
+    th.sorted-asc  .sort-arrow,
+    th.sorted-desc .sort-arrow { opacity: 1; color: #E0BE6D; }
+
+    /* Upload "drop zone" */
+    .dropzone {
+      background:
+        repeating-linear-gradient(45deg, rgba(201,169,97,0.05) 0 12px, transparent 12px 24px),
+        linear-gradient(180deg, rgba(201,169,97,0.04), rgba(201,169,97,0));
+    }
+
+    /* Selected department highlight */
+    .filter-chip {
+      display: inline-flex; align-items: center; gap: .4rem;
+      padding: .25rem .65rem; border-radius: 9999px;
+      background: rgba(201,169,97,0.12);
+      border: 1px solid rgba(201,169,97,0.35);
+      color: #F4E9C2; font-size: 12px; font-weight: 500;
+      letter-spacing: .02em;
+    }
+
+    /* Disable Tailwind preflight for charts (echarts inserts svg children) */
+    .chart svg { max-width: none; }
+
+    /* Reduce motion */
+    @media (prefers-reduced-motion: reduce) {
+      .ticker-track { animation: none; }
+      .reveal { opacity: 1; transform: none; transition: none; }
+    }
+  </style>
+</head>
+<body class="text-slate-100 font-sans antialiased min-h-screen">
+
+  <!-- ============ NAV ============ -->
+  <header class="sticky top-0 z-50 backdrop-blur-xl bg-ink-950/70 border-b border-white/5">
+    <div class="max-w-7xl mx-auto px-6 lg:px-10 h-16 flex items-center justify-between">
+      <a href="#top" class="flex items-center gap-2.5 group">
+        <span class="grid place-items-center w-9 h-9 rounded-lg bg-ink-800 border border-gold-400/30 group-hover:border-gold-400/60 transition">
+          <svg viewBox="0 0 24 24" class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="color:#E0BE6D">
+            <path d="M3 17 L3 7 L8 11 L12 7 L17 13 L21 9"/>
+            <circle cx="21" cy="9" r="1.6" fill="#E0BE6D"/>
+          </svg>
+        </span>
+        <span class="font-display text-xl tracking-tight">
+          Kanzlei<span class="text-gold-gradient">Cockpit</span>
+        </span>
+      </a>
+
+      <nav class="hidden md:flex items-center gap-8 text-sm text-slate-300">
+        <a href="#problem" class="hover:text-gold-300 transition">Warum</a>
+        <a href="#demo"     class="hover:text-gold-300 transition">Live-Demo</a>
+        <a href="#features" class="hover:text-gold-300 transition">Funktionen</a>
+        <a href="#workflow" class="hover:text-gold-300 transition">So funktioniert es</a>
+        <a href="#security" class="hover:text-gold-300 transition">Sicherheit</a>
+      </nav>
+
+      <a href="#demo" class="hidden md:inline-flex items-center gap-2 text-sm font-medium px-4 py-2 rounded-lg border border-gold-400/40 text-gold-100 hover:bg-gold-400/10 transition">
+        Demo erkunden
+        <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"/><path d="m13 5 7 7-7 7"/></svg>
+      </a>
+    </div>
+  </header>
+
+  <!-- ============ HERO ============ -->
+  <section id="top" class="relative overflow-hidden">
+    <div class="max-w-7xl mx-auto px-6 lg:px-10 pt-20 pb-16 lg:pt-28 lg:pb-24">
+      <div class="grid lg:grid-cols-12 gap-12 items-center">
+        <div class="lg:col-span-7">
+          <div class="inline-flex items-center gap-2 text-[11px] tracking-[0.22em] uppercase text-gold-300/90 font-medium mb-6">
+            <span class="w-1.5 h-1.5 rounded-full bg-gold-400"></span>
+            Speziell für Patentanwaltskanzleien
+          </div>
+
+          <h1 class="font-display text-4xl sm:text-5xl lg:text-6xl xl:text-7xl leading-[1.05] tracking-tight text-slate-50">
+            Führen Sie Ihre Kanzlei mit
+            <span class="text-gold-gradient italic">Daten.</span>
+            <br/>
+            Nicht mit
+            <span class="relative inline-block">
+              Bauchgefühl.
+              <svg class="absolute -bottom-2 left-0 w-full h-3" viewBox="0 0 300 12" preserveAspectRatio="none" fill="none">
+                <path d="M2 8 Q 60 2, 150 6 T 298 5" stroke="#C9A961" stroke-width="2" stroke-linecap="round"/>
+              </svg>
+            </span>
+          </h1>
+
+          <p class="mt-7 text-lg lg:text-xl text-slate-300/90 max-w-2xl leading-relaxed">
+            KanzleiCockpit verwandelt Ihren Datev-Export in das Finanz-Cockpit,
+            das Managing Partner immer wollten. Abteilungen, Anwälte, Mandanten
+            und Märkte – in einer Visualisierung.
+          </p>
+
+          <p class="mt-3 text-sm text-slate-400">
+            Kein Datev-Ersatz. Ein Datev-Verstärker.
+          </p>
+
+          <div class="mt-9 flex flex-wrap items-center gap-4">
+            <a href="#demo" class="group inline-flex items-center gap-2 px-6 py-3.5 rounded-xl bg-gradient-to-b from-gold-300 to-gold-500 text-ink-950 font-semibold shadow-glow-gold hover:from-gold-200 hover:to-gold-400 transition">
+              Live-Demo erkunden
+              <svg class="w-4 h-4 group-hover:translate-x-0.5 transition" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"/><path d="m13 5 7 7-7 7"/></svg>
+            </a>
+            <a href="#workflow" class="inline-flex items-center gap-2 px-6 py-3.5 rounded-xl border border-white/15 text-slate-200 hover:border-gold-400/40 hover:text-gold-100 transition">
+              So funktioniert es
+            </a>
+          </div>
+
+          <!-- Hero KPI strip -->
+          <div class="mt-12 grid grid-cols-3 max-w-xl divide-gold border border-gold-400/15 rounded-xl bg-ink-900/60 backdrop-blur">
+            <div class="px-5 py-4">
+              <div class="font-display text-2xl text-gold-200">4 Std.</div>
+              <div class="text-xs text-slate-400 mt-1">vom Export zur Insight</div>
+            </div>
+            <div class="px-5 py-4">
+              <div class="font-display text-2xl text-gold-200">100%</div>
+              <div class="text-xs text-slate-400 mt-1">Hosting in Deutschland</div>
+            </div>
+            <div class="px-5 py-4">
+              <div class="font-display text-2xl text-gold-200">0</div>
+              <div class="text-xs text-slate-400 mt-1">Eingriff in Datev</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Hero Preview Card -->
+        <div class="lg:col-span-5">
+          <div class="relative">
+            <div class="absolute -inset-4 bg-gradient-to-br from-gold-400/20 via-transparent to-ink-700/40 rounded-3xl blur-2xl"></div>
+            <div class="relative window-chrome rounded-2xl shadow-card ring-gold-soft overflow-hidden">
+              <!-- Window header -->
+              <div class="flex items-center gap-2 px-4 py-3 border-b border-white/5 bg-ink-900/70">
+                <span class="w-2.5 h-2.5 rounded-full bg-white/15"></span>
+                <span class="w-2.5 h-2.5 rounded-full bg-white/15"></span>
+                <span class="w-2.5 h-2.5 rounded-full bg-white/15"></span>
+                <div class="ml-3 text-[11px] tracking-wider text-slate-400 uppercase">cockpit · Q2 2026</div>
+                <div class="ml-auto flex items-center gap-1.5 text-[10px] text-emerald-300/90">
+                  <span class="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"></span>
+                  Live
+                </div>
+              </div>
+              <!-- Preview content -->
+              <div class="p-5">
+                <div class="flex items-baseline justify-between">
+                  <div>
+                    <div class="text-[11px] uppercase tracking-wider text-slate-400">Kanzleiumsatz YTD</div>
+                    <div class="font-display text-3xl text-slate-50 mt-1">€ 14.286.430</div>
+                  </div>
+                  <div class="text-right">
+                    <div class="text-[11px] uppercase tracking-wider text-slate-400">vs. Vorjahr</div>
+                    <div class="text-emerald-300 font-semibold mt-1 flex items-center gap-1 justify-end">
+                      <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="m6 17 6-6 4 4 4-6"/><path d="M14 7h6v6"/></svg>
+                      +11,4 %
+                    </div>
+                  </div>
+                </div>
+
+                <div id="heroChart" class="chart w-full h-44 mt-4"></div>
+
+                <div class="grid grid-cols-3 gap-2 mt-4">
+                  <div class="rounded-lg bg-ink-800/70 border border-white/5 px-3 py-2.5">
+                    <div class="text-[10px] uppercase text-slate-400">Marge</div>
+                    <div class="text-slate-100 font-semibold">38,6 %</div>
+                  </div>
+                  <div class="rounded-lg bg-ink-800/70 border border-white/5 px-3 py-2.5">
+                    <div class="text-[10px] uppercase text-slate-400">Mandanten</div>
+                    <div class="text-slate-100 font-semibold">412</div>
+                  </div>
+                  <div class="rounded-lg bg-ink-800/70 border border-white/5 px-3 py-2.5">
+                    <div class="text-[10px] uppercase text-slate-400">Realization</div>
+                    <div class="text-slate-100 font-semibold">86,4 %</div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Floating "Top Mandant" card -->
+            <div class="hidden md:block absolute -left-10 bottom-10 w-64 rounded-xl bg-ink-800/95 backdrop-blur border border-gold-400/30 p-4 shadow-card">
+              <div class="text-[10px] uppercase tracking-wider text-gold-300/80">Profitabelster Mandant</div>
+              <div class="font-display text-lg mt-1 text-slate-50">Helios Pharma AG</div>
+              <div class="mt-2 flex items-center gap-2 text-xs text-slate-300">
+                <span class="text-emerald-300 font-medium">+24 % Aufträge</span>
+                <span class="text-slate-500">·</span>
+                <span>Marge 61 %</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Marquee / trust bar -->
+    <div class="border-y border-white/5 bg-ink-950/60 overflow-hidden">
+      <div class="ticker-track flex gap-12 py-4 whitespace-nowrap text-xs uppercase tracking-[0.22em] text-slate-500">
+        <!-- Doubled list for seamless loop -->
+        <div class="flex gap-12 shrink-0">
+          <span>Vollständige Datev-Kompatibilität</span><span class="text-gold-400/60">◆</span>
+          <span>Hosting in Frankfurt</span><span class="text-gold-400/60">◆</span>
+          <span>ISO 27001 in Vorbereitung</span><span class="text-gold-400/60">◆</span>
+          <span>DSGVO konform</span><span class="text-gold-400/60">◆</span>
+          <span>Speziell für IP-Kanzleien</span><span class="text-gold-400/60">◆</span>
+          <span>Mandantenanalytik in Echtzeit</span><span class="text-gold-400/60">◆</span>
+        </div>
+        <div class="flex gap-12 shrink-0" aria-hidden="true">
+          <span>Vollständige Datev-Kompatibilität</span><span class="text-gold-400/60">◆</span>
+          <span>Hosting in Frankfurt</span><span class="text-gold-400/60">◆</span>
+          <span>ISO 27001 in Vorbereitung</span><span class="text-gold-400/60">◆</span>
+          <span>DSGVO konform</span><span class="text-gold-400/60">◆</span>
+          <span>Speziell für IP-Kanzleien</span><span class="text-gold-400/60">◆</span>
+          <span>Mandantenanalytik in Echtzeit</span><span class="text-gold-400/60">◆</span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ PROBLEM ============ -->
+  <section id="problem" class="relative">
+    <div class="max-w-7xl mx-auto px-6 lg:px-10 py-24 lg:py-32">
+      <div class="max-w-3xl">
+        <div class="text-[11px] tracking-[0.22em] uppercase text-gold-300/90 font-medium mb-5">Das Problem</div>
+        <h2 class="font-display text-3xl sm:text-4xl lg:text-5xl tracking-tight leading-[1.1]">
+          Datev liefert <span class="text-slate-400">Zahlen.</span>
+          <br class="hidden sm:block"/>
+          Wir liefern <span class="text-gold-gradient italic">Antworten.</span>
+        </h2>
+        <p class="mt-6 text-lg text-slate-300 leading-relaxed max-w-2xl">
+          Buchhaltung ist keine Strategie. Wer eine Kanzlei führen will,
+          braucht mehr als Salden — er braucht Klarheit über jeden Mandanten,
+          jede Abteilung, jeden Anwalt und jeden Markt.
+        </p>
+      </div>
+
+      <div class="mt-14 grid md:grid-cols-3 gap-5">
+        <div class="rounded-2xl border border-white/5 bg-ink-900/60 p-7 hover:border-gold-400/30 transition">
+          <div class="font-display text-5xl text-gold-400/80">01</div>
+          <h3 class="font-display text-xl mt-4 text-slate-50">Sie sehen, was eingenommen wurde.</h3>
+          <p class="mt-3 text-slate-400 leading-relaxed">Aber nicht, <em class="not-italic text-slate-200">wer</em> es erwirtschaftet hat. Welcher Partner. Welcher Junior. Welche Abteilung.</p>
+        </div>
+        <div class="rounded-2xl border border-white/5 bg-ink-900/60 p-7 hover:border-gold-400/30 transition">
+          <div class="font-display text-5xl text-gold-400/80">02</div>
+          <h3 class="font-display text-xl mt-4 text-slate-50">Sie sehen Salden.</h3>
+          <p class="mt-3 text-slate-400 leading-relaxed">Aber keine Trends. Welcher Mandant wächst still? Welcher Mandant schrumpft, bevor Sie es merken?</p>
+        </div>
+        <div class="rounded-2xl border border-white/5 bg-ink-900/60 p-7 hover:border-gold-400/30 transition">
+          <div class="font-display text-5xl text-gold-400/80">03</div>
+          <h3 class="font-display text-xl mt-4 text-slate-50">Sie haben Daten.</h3>
+          <p class="mt-3 text-slate-400 leading-relaxed">Aber keine Entscheidungsgrundlage. Strategie braucht Übersicht — nicht 47 Excel-Tabs.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ DEMO ============ -->
+  <section id="demo" class="relative">
+    <!-- Section header -->
+    <div class="max-w-7xl mx-auto px-6 lg:px-10 pt-8">
+      <div class="max-w-3xl">
+        <div class="text-[11px] tracking-[0.22em] uppercase text-gold-300/90 font-medium mb-5">Live-Demo</div>
+        <h2 class="font-display text-3xl sm:text-4xl lg:text-5xl tracking-tight leading-[1.1]">
+          Sehen, wie Ihre Kanzlei
+          <span class="text-gold-gradient italic">in Echtzeit</span>
+          aussehen würde.
+        </h2>
+        <p class="mt-6 text-lg text-slate-300/90 leading-relaxed max-w-2xl">
+          Spielen Sie mit den vier Cockpit-Bereichen. Alle Daten anonymisiert,
+          alle Zahlen plausibel — basierend auf der Struktur einer mittelgroßen
+          IP-Kanzlei mit 12 Partnern und 47 Mitarbeitern.
+        </p>
+      </div>
+    </div>
+
+    <!-- Demo container -->
+    <div class="max-w-7xl mx-auto px-6 lg:px-10 mt-10 pb-24">
+      <div class="window-chrome rounded-2xl shadow-card overflow-hidden">
+
+        <!-- Tabs -->
+        <div class="flex flex-wrap items-center justify-between gap-3 px-3 sm:px-5 py-3 border-b border-white/5 bg-ink-900/80">
+          <div role="tablist" class="flex flex-wrap gap-1.5">
+            <button role="tab" aria-selected="true" data-tab="abteilungen" class="tab-pill text-sm px-4 py-2 rounded-lg text-slate-300 hover:text-gold-100">
+              <span class="text-gold-400/80 mr-2">01</span>Abteilungen
+            </button>
+            <button role="tab" aria-selected="false" data-tab="anwaelte" class="tab-pill text-sm px-4 py-2 rounded-lg text-slate-300 hover:text-gold-100">
+              <span class="text-gold-400/80 mr-2">02</span>Anwälte
+            </button>
+            <button role="tab" aria-selected="false" data-tab="mandanten" class="tab-pill text-sm px-4 py-2 rounded-lg text-slate-300 hover:text-gold-100">
+              <span class="text-gold-400/80 mr-2">03</span>Mandanten
+            </button>
+            <button role="tab" aria-selected="false" data-tab="welt" class="tab-pill text-sm px-4 py-2 rounded-lg text-slate-300 hover:text-gold-100">
+              <span class="text-gold-400/80 mr-2">04</span>Welt
+            </button>
+          </div>
+          <div class="flex items-center gap-2 pr-2">
+            <span class="hidden sm:inline text-[11px] uppercase tracking-wider text-slate-500">Zeitraum</span>
+            <select id="periodSelect" class="bg-ink-800 border border-white/10 text-slate-200 text-sm rounded-lg px-3 py-1.5 focus:outline-none focus:border-gold-400/50">
+              <option>YTD 2026</option>
+              <option>Q1 2026</option>
+              <option>12 Monate rollierend</option>
+              <option>Geschäftsjahr 2025</option>
+            </select>
+          </div>
+        </div>
+
+        <!-- =========== TAB: ABTEILUNGEN =========== -->
+        <div data-panel="abteilungen" class="p-5 sm:p-7">
+          <!-- KPI strip + filters -->
+          <div class="flex flex-wrap items-end justify-between gap-4 mb-6">
+            <div>
+              <h3 class="font-display text-2xl">Wo entstehen Kosten? Wo entsteht Umsatz?</h3>
+              <p class="text-sm text-slate-400 mt-1">Klicken Sie auf eine Abteilung im Diagramm, um zu filtern.</p>
+            </div>
+            <div id="abtFilterArea" class="flex items-center gap-2 text-sm">
+              <span class="text-slate-500">Aktueller Filter:</span>
+              <span id="abtFilterChip" class="filter-chip">Alle Abteilungen</span>
+              <button id="abtFilterClear" class="text-slate-400 hover:text-gold-200 text-xs underline underline-offset-4">zurücksetzen</button>
+            </div>
+          </div>
+
+          <div class="grid grid-cols-2 md:grid-cols-4 gap-3 mb-6">
+            <div class="kpi rounded-xl border border-white/5 bg-ink-900/70 p-4">
+              <div class="text-[11px] uppercase tracking-wider text-slate-400">Umsatz</div>
+              <div id="kpiAbtUmsatz" class="font-display text-2xl mt-1 text-slate-50">€ 14,29 M</div>
+              <div class="text-xs text-emerald-300 mt-1">+11,4 % YoY</div>
+            </div>
+            <div class="kpi rounded-xl border border-white/5 bg-ink-900/70 p-4">
+              <div class="text-[11px] uppercase tracking-wider text-slate-400">Personalkosten</div>
+              <div id="kpiAbtKosten" class="font-display text-2xl mt-1 text-slate-50">€ 6,17 M</div>
+              <div class="text-xs text-slate-400 mt-1">43,2 % vom Umsatz</div>
+            </div>
+            <div class="kpi rounded-xl border border-white/5 bg-ink-900/70 p-4">
+              <div class="text-[11px] uppercase tracking-wider text-slate-400">Geleistete Stunden</div>
+              <div id="kpiAbtStunden" class="font-display text-2xl mt-1 text-slate-50">82.640 h</div>
+              <div class="text-xs text-slate-400 mt-1">Realization 86,4 %</div>
+            </div>
+            <div class="kpi rounded-xl border border-white/5 bg-ink-900/70 p-4">
+              <div class="text-[11px] uppercase tracking-wider text-slate-400">Marge nach Personal</div>
+              <div id="kpiAbtMarge" class="font-display text-2xl mt-1 text-gold-200">56,8 %</div>
+              <div class="text-xs text-slate-400 mt-1">vor Overhead</div>
+            </div>
+          </div>
+
+          <div class="grid lg:grid-cols-3 gap-5">
+            <div class="lg:col-span-2 rounded-xl border border-white/5 bg-ink-900/70 p-5">
+              <div class="flex items-center justify-between mb-3">
+                <h4 class="font-medium text-slate-200">Umsatz vs. Personalkosten je Abteilung</h4>
+                <div class="flex items-center gap-3 text-[11px] text-slate-400">
+                  <span class="inline-flex items-center gap-1"><span class="w-2 h-2 rounded-sm" style="background:#C9A961"></span> Umsatz</span>
+                  <span class="inline-flex items-center gap-1"><span class="w-2 h-2 rounded-sm" style="background:#2D5092"></span> Kosten</span>
+                </div>
+              </div>
+              <div id="abtBar" class="chart w-full h-80"></div>
+            </div>
+            <div class="rounded-xl border border-white/5 bg-ink-900/70 p-5">
+              <h4 class="font-medium text-slate-200 mb-3">Stundenverteilung</h4>
+              <div id="abtDonut" class="chart w-full h-80"></div>
+            </div>
+          </div>
+
+          <div class="grid lg:grid-cols-3 gap-5 mt-5">
+            <div class="lg:col-span-2 rounded-xl border border-white/5 bg-ink-900/70 p-5">
+              <h4 class="font-medium text-slate-200 mb-3">Umsatzentwicklung 12 Monate</h4>
+              <div id="abtArea" class="chart w-full h-72"></div>
+            </div>
+            <div class="rounded-xl border border-white/5 bg-ink-900/70 p-5">
+              <h4 class="font-medium text-slate-200 mb-3">Abteilungs-Highlights</h4>
+              <ul id="abtHighlights" class="space-y-3 text-sm">
+                <!-- populated by JS -->
+              </ul>
+            </div>
+          </div>
+        </div>
+
+        <!-- =========== TAB: ANWÄLTE =========== -->
+        <div data-panel="anwaelte" class="p-5 sm:p-7 hidden">
+          <div class="flex flex-wrap items-end justify-between gap-4 mb-6">
+            <div>
+              <h3 class="font-display text-2xl">Wer arbeitet wirklich für wen?</h3>
+              <p class="text-sm text-slate-400 mt-1">Klicken Sie auf einen Partner, um die Junior-Auslastung zu isolieren.</p>
+            </div>
+            <div class="flex items-center gap-2 text-sm">
+              <span class="text-slate-500">Fokus:</span>
+              <span id="partnerFilterChip" class="filter-chip">Alle Partner</span>
+              <button id="partnerFilterClear" class="text-slate-400 hover:text-gold-200 text-xs underline underline-offset-4">zurücksetzen</button>
+            </div>
+          </div>
+
+          <div class="grid grid-cols-2 md:grid-cols-4 gap-3 mb-6">
+            <div class="kpi rounded-xl border border-white/5 bg-ink-900/70 p-4">
+              <div class="text-[11px] uppercase tracking-wider text-slate-400">Aktive Berufsträger</div>
+              <div class="font-display text-2xl mt-1 text-slate-50">31</div>
+              <div class="text-xs text-slate-400 mt-1">12 Partner · 19 Associates</div>
+            </div>
+            <div class="kpi rounded-xl border border-white/5 bg-ink-900/70 p-4">
+              <div class="text-[11px] uppercase tracking-wider text-slate-400">Ø Billable Hours / Monat</div>
+              <div class="font-display text-2xl mt-1 text-slate-50">142 h</div>
+              <div class="text-xs text-emerald-300 mt-1">+6,1 % YoY</div>
+            </div>
+            <div class="kpi rounded-xl border border-white/5 bg-ink-900/70 p-4">
+              <div class="text-[11px] uppercase tracking-wider text-slate-400">Ø Realization</div>
+              <div class="font-display text-2xl mt-1 text-slate-50">87,3 %</div>
+              <div class="text-xs text-slate-400 mt-1">Quartal vs. Vorquartal +1,2 pp</div>
+            </div>
+            <div class="kpi rounded-xl border border-white/5 bg-ink-900/70 p-4">
+              <div class="text-[11px] uppercase tracking-wider text-slate-400">Höchster Beitrag (Partner)</div>
+              <div class="font-display text-2xl mt-1 text-gold-200">€ 1,84 M</div>
+              <div class="text-xs text-slate-400 mt-1">Dr. Brenner</div>
+            </div>
+          </div>
+
+          <div class="grid lg:grid-cols-3 gap-5">
+            <div class="lg:col-span-2 rounded-xl border border-white/5 bg-ink-900/70 p-5">
+              <h4 class="font-medium text-slate-200 mb-3">Stunden-Fluss: Associates → Partner</h4>
+              <div id="anwSankey" class="chart w-full h-[420px]"></div>
+            </div>
+            <div class="rounded-xl border border-white/5 bg-ink-900/70 p-5">
+              <h4 class="font-medium text-slate-200 mb-3">Top Biller (rollendes Quartal)</h4>
+              <div id="anwBar" class="chart w-full h-[420px]"></div>
+            </div>
+          </div>
+
+          <div class="grid lg:grid-cols-3 gap-5 mt-5">
+            <div class="lg:col-span-2 rounded-xl border border-white/5 bg-ink-900/70 p-5">
+              <h4 class="font-medium text-slate-200 mb-3">Realization Rate vs. Auslastung</h4>
+              <div id="anwScatter" class="chart w-full h-80"></div>
+              <div class="mt-3 text-xs text-slate-400">
+                Höhere Auslastung → höhere Realization. Ausreißer rechts unten deuten auf überlastete, aber unterabrechnete Profile hin.
+              </div>
+            </div>
+            <div class="rounded-xl border border-white/5 bg-ink-900/70 p-5">
+              <h4 class="font-medium text-slate-200 mb-3">Hinweise</h4>
+              <ul id="anwHighlights" class="space-y-3 text-sm"></ul>
+            </div>
+          </div>
+        </div>
+
+        <!-- =========== TAB: MANDANTEN =========== -->
+        <div data-panel="mandanten" class="p-5 sm:p-7 hidden">
+          <div class="flex flex-wrap items-end justify-between gap-4 mb-6">
+            <div>
+              <h3 class="font-display text-2xl">Welche Mandanten tragen Ihre Kanzlei?</h3>
+              <p class="text-sm text-slate-400 mt-1">Sortieren Sie die Tabelle nach Profitabilität, Trend oder Neuauftragsdynamik.</p>
+            </div>
+            <div class="flex items-center gap-2">
+              <input id="clientSearch" type="search" placeholder="Mandant suchen…" class="bg-ink-800 border border-white/10 text-sm text-slate-200 rounded-lg px-3 py-1.5 w-56 focus:outline-none focus:border-gold-400/50"/>
+              <select id="clientIndustry" class="bg-ink-800 border border-white/10 text-sm text-slate-200 rounded-lg px-3 py-1.5 focus:outline-none focus:border-gold-400/50">
+                <option value="">Alle Branchen</option>
+                <option>Pharma & Biotech</option>
+                <option>Maschinenbau</option>
+                <option>Halbleiter</option>
+                <option>Automotive</option>
+                <option>Software</option>
+                <option>Konsumgüter</option>
+                <option>Chemie</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="grid grid-cols-2 md:grid-cols-4 gap-3 mb-6">
+            <div class="kpi rounded-xl border border-white/5 bg-ink-900/70 p-4">
+              <div class="text-[11px] uppercase tracking-wider text-slate-400">Aktive Mandanten</div>
+              <div class="font-display text-2xl mt-1 text-slate-50">412</div>
+              <div class="text-xs text-slate-400 mt-1">Top 20 = 64 % Umsatz</div>
+            </div>
+            <div class="kpi rounded-xl border border-white/5 bg-ink-900/70 p-4">
+              <div class="text-[11px] uppercase tracking-wider text-slate-400">Neu in 90 Tagen</div>
+              <div class="font-display text-2xl mt-1 text-emerald-300">+18</div>
+              <div class="text-xs text-slate-400 mt-1">davon 4 strategisch</div>
+            </div>
+            <div class="kpi rounded-xl border border-white/5 bg-ink-900/70 p-4">
+              <div class="text-[11px] uppercase tracking-wider text-slate-400">Schrumpfende Mandate</div>
+              <div class="font-display text-2xl mt-1 text-rose-300">9</div>
+              <div class="text-xs text-slate-400 mt-1">Aufträge YoY −20 %</div>
+            </div>
+            <div class="kpi rounded-xl border border-white/5 bg-ink-900/70 p-4">
+              <div class="text-[11px] uppercase tracking-wider text-slate-400">Größter Einzelmandant</div>
+              <div class="font-display text-2xl mt-1 text-gold-200">€ 612 k</div>
+              <div class="text-xs text-slate-400 mt-1">Helios Pharma AG</div>
+            </div>
+          </div>
+
+          <div class="grid lg:grid-cols-3 gap-5">
+            <div class="lg:col-span-2 rounded-xl border border-white/5 bg-ink-900/70 overflow-hidden">
+              <div class="overflow-x-auto">
+                <table class="min-w-full text-sm">
+                  <thead class="bg-ink-800/70 text-slate-300">
+                    <tr>
+                      <th class="text-left px-4 py-3 sortable" data-key="name">Mandant <span class="sort-arrow">↕</span></th>
+                      <th class="text-left px-4 py-3 sortable" data-key="industry">Branche <span class="sort-arrow">↕</span></th>
+                      <th class="text-right px-4 py-3 sortable sorted-desc" data-key="revenue">Umsatz YTD <span class="sort-arrow">↓</span></th>
+                      <th class="text-right px-4 py-3 sortable" data-key="margin">Marge <span class="sort-arrow">↕</span></th>
+                      <th class="text-right px-4 py-3 sortable" data-key="newOrders">Neuaufträge YoY <span class="sort-arrow">↕</span></th>
+                      <th class="text-left px-4 py-3">12-Mt-Trend</th>
+                    </tr>
+                  </thead>
+                  <tbody id="clientsTbody" class="divide-y divide-white/5"></tbody>
+                </table>
+              </div>
+              <div class="px-4 py-2.5 text-xs text-slate-500 border-t border-white/5 flex items-center justify-between">
+                <span id="clientsRowsInfo">— Mandanten angezeigt</span>
+                <span>Auswahl klicken → Detail rechts</span>
+              </div>
+            </div>
+
+            <div class="rounded-xl border border-white/5 bg-ink-900/70 p-5">
+              <div class="text-[11px] uppercase tracking-wider text-slate-400">Mandantendetail</div>
+              <div id="clientName" class="font-display text-xl mt-1 text-slate-50">— Mandant wählen —</div>
+              <div id="clientMeta" class="text-xs text-slate-400 mt-1">&nbsp;</div>
+              <div class="grid grid-cols-2 gap-2 mt-4">
+                <div class="rounded-lg bg-ink-800/70 border border-white/5 px-3 py-2.5">
+                  <div class="text-[10px] uppercase text-slate-400">Umsatz YTD</div>
+                  <div id="clientRevenue" class="text-slate-100 font-semibold">—</div>
+                </div>
+                <div class="rounded-lg bg-ink-800/70 border border-white/5 px-3 py-2.5">
+                  <div class="text-[10px] uppercase text-slate-400">Marge</div>
+                  <div id="clientMargin" class="text-slate-100 font-semibold">—</div>
+                </div>
+                <div class="rounded-lg bg-ink-800/70 border border-white/5 px-3 py-2.5">
+                  <div class="text-[10px] uppercase text-slate-400">Aufträge YTD</div>
+                  <div id="clientOrders" class="text-slate-100 font-semibold">—</div>
+                </div>
+                <div class="rounded-lg bg-ink-800/70 border border-white/5 px-3 py-2.5">
+                  <div class="text-[10px] uppercase text-slate-400">Ø Stundenrate</div>
+                  <div id="clientRate" class="text-slate-100 font-semibold">—</div>
+                </div>
+              </div>
+              <h4 class="mt-5 mb-2 text-sm text-slate-300 font-medium">Umsatz 12 Monate</h4>
+              <div id="clientLine" class="chart w-full h-44"></div>
+              <h4 class="mt-4 mb-2 text-sm text-slate-300 font-medium">Soll / Haben</h4>
+              <div id="clientSollHaben" class="chart w-full h-40"></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- =========== TAB: WELT =========== -->
+        <div data-panel="welt" class="p-5 sm:p-7 hidden">
+          <div class="flex flex-wrap items-end justify-between gap-4 mb-6">
+            <div>
+              <h3 class="font-display text-2xl">Wo sitzen die Mandanten der Zukunft?</h3>
+              <p class="text-sm text-slate-400 mt-1">Größere Punkte = höherer Umsatz. Farbintensität = Wachstum YoY.</p>
+            </div>
+            <div class="flex items-center gap-2 text-sm">
+              <span class="text-slate-500">Fokus:</span>
+              <span id="worldFilterChip" class="filter-chip">Welt</span>
+            </div>
+          </div>
+
+          <div class="grid grid-cols-2 md:grid-cols-4 gap-3 mb-6">
+            <div class="kpi rounded-xl border border-white/5 bg-ink-900/70 p-4">
+              <div class="text-[11px] uppercase tracking-wider text-slate-400">Länder mit Mandaten</div>
+              <div class="font-display text-2xl mt-1 text-slate-50">38</div>
+              <div class="text-xs text-slate-400 mt-1">+4 neu (12 Mt.)</div>
+            </div>
+            <div class="kpi rounded-xl border border-white/5 bg-ink-900/70 p-4">
+              <div class="text-[11px] uppercase tracking-wider text-slate-400">Internationaler Anteil</div>
+              <div class="font-display text-2xl mt-1 text-slate-50">47,6 %</div>
+              <div class="text-xs text-emerald-300 mt-1">+3,1 pp YoY</div>
+            </div>
+            <div class="kpi rounded-xl border border-white/5 bg-ink-900/70 p-4">
+              <div class="text-[11px] uppercase tracking-wider text-slate-400">Top Wachstumsmarkt</div>
+              <div class="font-display text-2xl mt-1 text-gold-200">Südkorea</div>
+              <div class="text-xs text-emerald-300 mt-1">+41 % Umsatz YoY</div>
+            </div>
+            <div class="kpi rounded-xl border border-white/5 bg-ink-900/70 p-4">
+              <div class="text-[11px] uppercase tracking-wider text-slate-400">Rückläufiger Markt</div>
+              <div class="font-display text-2xl mt-1 text-rose-300">UK</div>
+              <div class="text-xs text-slate-400 mt-1">−12 % Aufträge YoY</div>
+            </div>
+          </div>
+
+          <div class="grid lg:grid-cols-3 gap-5">
+            <div class="lg:col-span-2 rounded-xl border border-white/5 bg-ink-900/70 p-5">
+              <div id="worldMap" class="chart w-full h-[480px]"></div>
+              <div id="worldMapFallback" class="hidden text-sm text-slate-400 mt-2">
+                Hinweis: Kartendaten konnten nicht geladen werden. <a class="underline text-gold-300" href="#" id="worldRetry">Erneut versuchen</a>.
+              </div>
+            </div>
+            <div class="rounded-xl border border-white/5 bg-ink-900/70 p-5">
+              <h4 class="font-medium text-slate-200 mb-3">Top-Märkte nach Umsatz</h4>
+              <div id="worldBar" class="chart w-full h-[480px]"></div>
+            </div>
+          </div>
+        </div>
+
+      </div>
+
+      <p class="text-center text-xs text-slate-500 mt-6">
+        Daten in der Demo sind synthetisch und repräsentieren eine fiktive Patentanwaltskanzlei „Brenner &amp; Voss Partner mbB&quot;.
+      </p>
+    </div>
+  </section>
+
+  <!-- ============ FEATURES ============ -->
+  <section id="features" class="relative">
+    <div class="max-w-7xl mx-auto px-6 lg:px-10 py-24 lg:py-28">
+      <div class="max-w-3xl">
+        <div class="text-[11px] tracking-[0.22em] uppercase text-gold-300/90 font-medium mb-5">Funktionen</div>
+        <h2 class="font-display text-3xl sm:text-4xl lg:text-5xl tracking-tight leading-[1.1]">
+          Alles, was Ihr <span class="text-gold-gradient italic">Managing Partner</span> wissen muss.
+          <br/>An einem Ort.
+        </h2>
+      </div>
+
+      <div class="mt-14 grid md:grid-cols-2 lg:grid-cols-3 gap-5">
+        <div class="rounded-2xl border border-white/5 bg-ink-900/60 p-7 hover:border-gold-400/30 transition">
+          <div class="grid place-items-center w-11 h-11 rounded-xl bg-gold-400/10 border border-gold-400/30 text-gold-200">
+            <svg viewBox="0 0 24 24" class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3h7v7H3z"/><path d="M14 3h7v7h-7z"/><path d="M14 14h7v7h-7z"/><path d="M3 14h7v7H3z"/></svg>
+          </div>
+          <h3 class="font-display text-xl mt-5">Abteilungs-Cockpit</h3>
+          <p class="text-slate-400 mt-2 leading-relaxed">Kosten, Stunden und Umsatz für jede Abteilung — Patente, Marken, Designs, Litigation, Verwaltung. In einer Ansicht.</p>
+        </div>
+        <div class="rounded-2xl border border-white/5 bg-ink-900/60 p-7 hover:border-gold-400/30 transition">
+          <div class="grid place-items-center w-11 h-11 rounded-xl bg-gold-400/10 border border-gold-400/30 text-gold-200">
+            <svg viewBox="0 0 24 24" class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="7" r="4"/><path d="M3 21v-1a6 6 0 0 1 12 0v1"/><circle cx="17" cy="11" r="3"/><path d="M21 21v-1a4 4 0 0 0-6-3.5"/></svg>
+          </div>
+          <h3 class="font-display text-xl mt-5">Anwalts-Matrix</h3>
+          <p class="text-slate-400 mt-2 leading-relaxed">Welche Junior-Stunden fließen an welchen Partner? Wer ist überlastet, wer unterausgelastet, wer der heimliche Profit-Center?</p>
+        </div>
+        <div class="rounded-2xl border border-white/5 bg-ink-900/60 p-7 hover:border-gold-400/30 transition">
+          <div class="grid place-items-center w-11 h-11 rounded-xl bg-gold-400/10 border border-gold-400/30 text-gold-200">
+            <svg viewBox="0 0 24 24" class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3v18h18"/><path d="m7 15 4-4 3 3 6-7"/></svg>
+          </div>
+          <h3 class="font-display text-xl mt-5">Mandantenanalytik</h3>
+          <p class="text-slate-400 mt-2 leading-relaxed">Profitabilität, Trendrichtung, Anteil am Gesamtumsatz, Auftragsdynamik. Pro Mandant, pro Branche, pro Region.</p>
+        </div>
+        <div class="rounded-2xl border border-white/5 bg-ink-900/60 p-7 hover:border-gold-400/30 transition">
+          <div class="grid place-items-center w-11 h-11 rounded-xl bg-gold-400/10 border border-gold-400/30 text-gold-200">
+            <svg viewBox="0 0 24 24" class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M2 12h20"/><path d="M12 2a15 15 0 0 1 0 20"/><path d="M12 2a15 15 0 0 0 0 20"/></svg>
+          </div>
+          <h3 class="font-display text-xl mt-5">Geografische Übersicht</h3>
+          <p class="text-slate-400 mt-2 leading-relaxed">Welche Märkte tragen Ihr Wachstum? Wo verlieren Sie Boden? Eine Weltkarte sagt mehr als 200 Buchungssätze.</p>
+        </div>
+        <div class="rounded-2xl border border-white/5 bg-ink-900/60 p-7 hover:border-gold-400/30 transition">
+          <div class="grid place-items-center w-11 h-11 rounded-xl bg-gold-400/10 border border-gold-400/30 text-gold-200">
+            <svg viewBox="0 0 24 24" class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12h4l3-8 4 16 3-8h4"/></svg>
+          </div>
+          <h3 class="font-display text-xl mt-5">Soll / Haben Verstand</h3>
+          <p class="text-slate-400 mt-2 leading-relaxed">Wir lesen Ihren Datev-Export so, wie Sie ihn gemeint hätten: Konten werden semantisch zugeordnet — Mandant, Partner, Abteilung, Markt.</p>
+        </div>
+        <div class="rounded-2xl border border-white/5 bg-ink-900/60 p-7 hover:border-gold-400/30 transition">
+          <div class="grid place-items-center w-11 h-11 rounded-xl bg-gold-400/10 border border-gold-400/30 text-gold-200">
+            <svg viewBox="0 0 24 24" class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M8 12h8"/><path d="M12 8v8"/></svg>
+          </div>
+          <h3 class="font-display text-xl mt-5">Partner-Briefing in 3 Minuten</h3>
+          <p class="text-slate-400 mt-2 leading-relaxed">Ein PDF-Export für die nächste Gesellschafterversammlung. Mit den richtigen Fragen — und den richtigen Zahlen darunter.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ WORKFLOW ============ -->
+  <section id="workflow" class="relative">
+    <div class="max-w-7xl mx-auto px-6 lg:px-10 py-24 lg:py-28">
+      <div class="grid lg:grid-cols-12 gap-12">
+        <div class="lg:col-span-5">
+          <div class="text-[11px] tracking-[0.22em] uppercase text-gold-300/90 font-medium mb-5">So funktioniert es</div>
+          <h2 class="font-display text-3xl sm:text-4xl lg:text-5xl tracking-tight leading-[1.1]">
+            In <span class="text-gold-gradient italic">drei Schritten</span> vom Datev-Export ins Cockpit.
+          </h2>
+          <p class="mt-6 text-slate-300/90 leading-relaxed">
+            Sie behalten Datev. Wir bauen darauf auf. Kein Eingriff, kein neuer Workflow für Ihre Buchhaltung —
+            wir nehmen, was Sie ohnehin exportieren.
+          </p>
+
+          <div class="mt-8 space-y-5">
+            <div class="flex gap-4">
+              <div class="font-display text-3xl text-gold-300 w-10 shrink-0">01</div>
+              <div>
+                <h4 class="font-medium text-slate-100">Datev-Export hochladen</h4>
+                <p class="text-sm text-slate-400 mt-1">Buchungssätze, Lohnjournal, OPOS-Liste, Rechnungseingang/-ausgang. CSV oder Datev XML.</p>
+              </div>
+            </div>
+            <div class="flex gap-4">
+              <div class="font-display text-3xl text-gold-300 w-10 shrink-0">02</div>
+              <div>
+                <h4 class="font-medium text-slate-100">Zuordnung prüfen</h4>
+                <p class="text-sm text-slate-400 mt-1">Wir mappen Ihre Sachkonten auf Abteilungen, Anwälte und Mandanten. Sie bestätigen einmalig — wir lernen es uns.</p>
+              </div>
+            </div>
+            <div class="flex gap-4">
+              <div class="font-display text-3xl text-gold-300 w-10 shrink-0">03</div>
+              <div>
+                <h4 class="font-medium text-slate-100">Cockpit nutzen</h4>
+                <p class="text-sm text-slate-400 mt-1">Filter, Drill-Down, PDF-Briefing, monatlicher Re-Import per Knopfdruck.</p>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="lg:col-span-7">
+          <div class="window-chrome rounded-2xl shadow-card overflow-hidden">
+            <div class="flex items-center gap-2 px-4 py-3 border-b border-white/5 bg-ink-900/70">
+              <span class="w-2.5 h-2.5 rounded-full bg-white/15"></span>
+              <span class="w-2.5 h-2.5 rounded-full bg-white/15"></span>
+              <span class="w-2.5 h-2.5 rounded-full bg-white/15"></span>
+              <div class="ml-3 text-[11px] tracking-wider text-slate-400 uppercase">cockpit · Daten-Import</div>
+            </div>
+            <div class="p-6">
+              <div class="dropzone border-2 border-dashed border-gold-400/30 rounded-xl p-8 text-center">
+                <div class="mx-auto w-14 h-14 grid place-items-center rounded-xl bg-gold-400/10 border border-gold-400/30 text-gold-200">
+                  <svg viewBox="0 0 24 24" class="w-7 h-7" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><path d="m17 8-5-5-5 5"/><path d="M12 3v12"/></svg>
+                </div>
+                <div class="font-display text-lg mt-4 text-slate-100">Datev-Export hier ablegen</div>
+                <div class="text-xs text-slate-400 mt-1">Akzeptiert: Datev XML, CSV (Buchungssätze, Lohnjournal, OPOS) · max. 250 MB</div>
+                <button class="mt-5 inline-flex items-center gap-2 px-4 py-2 rounded-lg border border-gold-400/40 text-gold-100 hover:bg-gold-400/10 transition text-sm">
+                  Dateien auswählen
+                </button>
+              </div>
+              <div class="mt-5 grid sm:grid-cols-3 gap-3 text-sm">
+                <div class="rounded-lg bg-ink-800/70 border border-white/5 px-3 py-3">
+                  <div class="text-[10px] uppercase text-slate-400">Erkannte Sachkonten</div>
+                  <div class="text-slate-100 font-semibold mt-0.5">1 248</div>
+                </div>
+                <div class="rounded-lg bg-ink-800/70 border border-white/5 px-3 py-3">
+                  <div class="text-[10px] uppercase text-slate-400">Buchungssätze</div>
+                  <div class="text-slate-100 font-semibold mt-0.5">87 412</div>
+                </div>
+                <div class="rounded-lg bg-ink-800/70 border border-white/5 px-3 py-3">
+                  <div class="text-[10px] uppercase text-slate-400">Status</div>
+                  <div class="font-semibold mt-0.5 text-emerald-300">Bereit</div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ SECURITY ============ -->
+  <section id="security" class="relative">
+    <div class="max-w-7xl mx-auto px-6 lg:px-10 py-24 lg:py-28">
+      <div class="rounded-3xl border border-gold-400/20 bg-gradient-to-br from-ink-900 to-ink-950 p-10 lg:p-14 bg-grid">
+        <div class="grid lg:grid-cols-12 gap-10 items-start">
+          <div class="lg:col-span-6">
+            <div class="text-[11px] tracking-[0.22em] uppercase text-gold-300/90 font-medium mb-5">Sicherheit &amp; Vertraulichkeit</div>
+            <h2 class="font-display text-3xl sm:text-4xl lg:text-5xl tracking-tight leading-[1.1]">
+              Mandatsgeheimnis ist nicht <span class="text-gold-gradient italic">verhandelbar.</span>
+            </h2>
+            <p class="mt-6 text-slate-300/90 leading-relaxed">
+              KanzleiCockpit wurde von Beginn an für eine Berufsgruppe gebaut, in der Vertraulichkeit
+              kein Feature ist, sondern eine Pflicht. Daten verlassen weder Deutschland noch unsere
+              dedizierte Infrastruktur.
+            </p>
+          </div>
+          <div class="lg:col-span-6">
+            <ul class="space-y-4">
+              <li class="flex gap-3">
+                <span class="mt-0.5 text-gold-300">◆</span>
+                <div>
+                  <div class="font-medium text-slate-100">Hosting ausschließlich in Frankfurt</div>
+                  <div class="text-sm text-slate-400">ISO-27001-zertifiziertes Rechenzentrum, Auftragsverarbeitung nach DSGVO.</div>
+                </div>
+              </li>
+              <li class="flex gap-3">
+                <span class="mt-0.5 text-gold-300">◆</span>
+                <div>
+                  <div class="font-medium text-slate-100">Dedizierte Datenbank je Kanzlei</div>
+                  <div class="text-sm text-slate-400">Keine geteilten Tenants. Keine Daten-Vermischung. Eigene Verschlüsselungs­schlüssel.</div>
+                </div>
+              </li>
+              <li class="flex gap-3">
+                <span class="mt-0.5 text-gold-300">◆</span>
+                <div>
+                  <div class="font-medium text-slate-100">Verschlüsselung at rest &amp; in transit</div>
+                  <div class="text-sm text-slate-400">AES-256 in der Datenbank, TLS 1.3 im Transport. Auf Wunsch HSM-gebunden.</div>
+                </div>
+              </li>
+              <li class="flex gap-3">
+                <span class="mt-0.5 text-gold-300">◆</span>
+                <div>
+                  <div class="font-medium text-slate-100">Kein Training auf Mandantendaten</div>
+                  <div class="text-sm text-slate-400">Ihre Buchhaltung bleibt Ihre Buchhaltung. Niemals Trainingsmaterial. Niemals Drittnutzung.</div>
+                </div>
+              </li>
+              <li class="flex gap-3">
+                <span class="mt-0.5 text-gold-300">◆</span>
+                <div>
+                  <div class="font-medium text-slate-100">Vollständiges Audit-Log</div>
+                  <div class="text-sm text-slate-400">Jeder Zugriff ist nachvollziehbar. Exportierbar für interne Compliance.</div>
+                </div>
+              </li>
+            </ul>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ FAQ ============ -->
+  <section id="faq" class="relative">
+    <div class="max-w-4xl mx-auto px-6 lg:px-10 py-24 lg:py-28">
+      <div class="text-center mb-12">
+        <div class="text-[11px] tracking-[0.22em] uppercase text-gold-300/90 font-medium mb-5">Häufige Fragen</div>
+        <h2 class="font-display text-3xl sm:text-4xl tracking-tight">Antworten — bevor Sie fragen.</h2>
+      </div>
+      <div class="divide-y divide-white/5 border-y border-white/5">
+        <details class="group py-5">
+          <summary class="flex items-center justify-between cursor-pointer list-none">
+            <span class="font-medium text-slate-100">Müssen wir Datev verlassen?</span>
+            <span class="text-gold-300 transition group-open:rotate-45 text-xl leading-none">+</span>
+          </summary>
+          <p class="mt-3 text-slate-400 leading-relaxed">Nein. KanzleiCockpit ist explizit als Aufsatz auf Ihre bestehende Datev-Welt konzipiert.
+          Ihre Buchhaltung läuft weiter wie heute — wir interpretieren lediglich, was Sie exportieren.</p>
+        </details>
+        <details class="group py-5">
+          <summary class="flex items-center justify-between cursor-pointer list-none">
+            <span class="font-medium text-slate-100">Wie aufwendig ist die Erstkonfiguration?</span>
+            <span class="text-gold-300 transition group-open:rotate-45 text-xl leading-none">+</span>
+          </summary>
+          <p class="mt-3 text-slate-400 leading-relaxed">In der Regel ein einmaliger Termin von 90 Minuten mit Ihrer Buchhaltung,
+          in dem wir Ihre Kontenstruktur auf das Cockpit-Modell mappen. Danach läuft jeder Re-Import vollautomatisch.</p>
+        </details>
+        <details class="group py-5">
+          <summary class="flex items-center justify-between cursor-pointer list-none">
+            <span class="font-medium text-slate-100">Werden Mandantendaten zur Analyse an Dritte weitergegeben?</span>
+            <span class="text-gold-300 transition group-open:rotate-45 text-xl leading-none">+</span>
+          </summary>
+          <p class="mt-3 text-slate-400 leading-relaxed">Niemals. Ihre Daten verlassen weder Deutschland noch Ihre dedizierte Datenbank.
+          Auch zur Modell-Weiterentwicklung werden ausschließlich anonymisierte Schemata, niemals Inhalte verwendet.</p>
+        </details>
+        <details class="group py-5">
+          <summary class="flex items-center justify-between cursor-pointer list-none">
+            <span class="font-medium text-slate-100">Funktioniert das auch für Anwaltskanzleien außerhalb des Patentrechts?</span>
+            <span class="text-gold-300 transition group-open:rotate-45 text-xl leading-none">+</span>
+          </summary>
+          <p class="mt-3 text-slate-400 leading-relaxed">Technisch ja — die ersten Releases sind jedoch eng auf die Eigenheiten von IP-Kanzleien zugeschnitten
+          (Schutzrechtsklassen, Jahresgebühren, internationale Mandantenstruktur). Weitere Branchen folgen.</p>
+        </details>
+        <details class="group py-5">
+          <summary class="flex items-center justify-between cursor-pointer list-none">
+            <span class="font-medium text-slate-100">Was kostet KanzleiCockpit?</span>
+            <span class="text-gold-300 transition group-open:rotate-45 text-xl leading-none">+</span>
+          </summary>
+          <p class="mt-3 text-slate-400 leading-relaxed">Wir kalkulieren pro Kanzlei individuell, abhängig von Kanzleigröße, Anzahl Berufsträger und
+          gewünschtem Onboarding-Umfang. Sprechen Sie uns an — wir bereiten Ihnen ein klares Angebot vor.</p>
+        </details>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ CLOSER ============ -->
+  <section class="relative">
+    <div class="max-w-5xl mx-auto px-6 lg:px-10 py-16 lg:py-20 text-center">
+      <h2 class="font-display text-3xl sm:text-4xl lg:text-5xl tracking-tight leading-[1.1]">
+        Ihre Kanzlei produziert <span class="text-slate-400">jeden Tag</span>
+        <br/>
+        die Daten, die sie führen sollten.
+      </h2>
+      <p class="mt-6 text-slate-300/90 max-w-2xl mx-auto">
+        Es wird Zeit, sie endlich zu sehen.
+      </p>
+      <div class="mt-9 flex flex-wrap items-center gap-4 justify-center">
+        <a href="#demo" class="inline-flex items-center gap-2 px-6 py-3.5 rounded-xl bg-gradient-to-b from-gold-300 to-gold-500 text-ink-950 font-semibold shadow-glow-gold hover:from-gold-200 hover:to-gold-400 transition">
+          Demo erkunden
+        </a>
+        <a href="#workflow" class="inline-flex items-center gap-2 px-6 py-3.5 rounded-xl border border-white/15 text-slate-200 hover:border-gold-400/40 hover:text-gold-100 transition">
+          Workflow ansehen
+        </a>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ FOOTER ============ -->
+  <footer class="border-t border-white/5 bg-ink-975/60">
+    <div class="max-w-7xl mx-auto px-6 lg:px-10 py-12 grid md:grid-cols-4 gap-8 text-sm">
+      <div class="md:col-span-2">
+        <div class="flex items-center gap-2.5">
+          <span class="grid place-items-center w-9 h-9 rounded-lg bg-ink-800 border border-gold-400/30">
+            <svg viewBox="0 0 24 24" class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="color:#E0BE6D">
+              <path d="M3 17 L3 7 L8 11 L12 7 L17 13 L21 9"/>
+              <circle cx="21" cy="9" r="1.6" fill="#E0BE6D"/>
+            </svg>
+          </span>
+          <span class="font-display text-xl tracking-tight">Kanzlei<span class="text-gold-gradient">Cockpit</span></span>
+        </div>
+        <p class="mt-4 text-slate-400 max-w-md leading-relaxed">
+          Das Finanz-Cockpit für moderne Patentanwaltskanzleien. Aus Datev-Export wird Entscheidungsgrundlage.
+        </p>
+      </div>
+      <div>
+        <div class="text-[11px] uppercase tracking-wider text-slate-500 mb-3">Produkt</div>
+        <ul class="space-y-2 text-slate-300">
+          <li><a href="#demo" class="hover:text-gold-200">Live-Demo</a></li>
+          <li><a href="#features" class="hover:text-gold-200">Funktionen</a></li>
+          <li><a href="#workflow" class="hover:text-gold-200">Workflow</a></li>
+          <li><a href="#security" class="hover:text-gold-200">Sicherheit</a></li>
+        </ul>
+      </div>
+      <div>
+        <div class="text-[11px] uppercase tracking-wider text-slate-500 mb-3">Rechtliches</div>
+        <ul class="space-y-2 text-slate-300">
+          <li><a href="#" class="hover:text-gold-200">Impressum</a></li>
+          <li><a href="#" class="hover:text-gold-200">Datenschutz</a></li>
+          <li><a href="#" class="hover:text-gold-200">AGB</a></li>
+          <li><a href="#" class="hover:text-gold-200">DPA</a></li>
+        </ul>
+      </div>
+    </div>
+    <div class="border-t border-white/5">
+      <div class="max-w-7xl mx-auto px-6 lg:px-10 py-5 flex flex-wrap items-center justify-between gap-3 text-xs text-slate-500">
+        <div>© 2026 KanzleiCockpit. Alle Rechte vorbehalten.</div>
+        <div>Made with <span class="text-gold-300">◆</span> in Deutschland.</div>
+      </div>
+    </div>
+  </footer>
+
+  <!-- ============ APP JS ============ -->
+  <script src="./assets/app.js"></script>
+</body>
+</html>
