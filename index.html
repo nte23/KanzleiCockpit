@@ -3,18 +3,15 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>KanzleiCockpit – Das Finanz-Cockpit für Patentanwaltskanzleien</title>
-  <meta name="description" content="KanzleiCockpit verwandelt Ihren Datev-Export in das Finanz-Cockpit, das Managing Partner immer wollten. Abteilungen, Anwälte, Mandanten, Märkte – eine Visualisierung." />
+  <title>KanzleiCockpit · UI Preview</title>
+  <meta name="description" content="UI-Preview der einzelnen KanzleiCockpit-Screens." />
   <meta name="theme-color" content="#060E1F" />
-  <meta property="og:title" content="KanzleiCockpit – Datev sieht Zahlen. Wir sehen Antworten." />
-  <meta property="og:description" content="Das Finanz-Cockpit für moderne Patentanwaltskanzleien. Aus Datev-Export wird Entscheidungsgrundlage." />
-  <meta property="og:type" content="website" />
 
   <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='12' fill='%23060E1F'/%3E%3Cpath d='M14 44 V20 L24 30 L32 22 L42 34 L50 26' stroke='%23C9A961' stroke-width='3.5' fill='none' stroke-linecap='round' stroke-linejoin='round'/%3E%3Ccircle cx='50' cy='26' r='3' fill='%23C9A961'/%3E%3C/svg%3E" />
 
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600;9..144,700&family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600;9..144,700&family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
 
   <script src="https://cdn.tailwindcss.com"></script>
   <script src="https://cdn.jsdelivr.net/npm/echarts@5.4.3/dist/echarts.min.js"></script>
@@ -24,7 +21,8 @@
         extend: {
           fontFamily: {
             sans: ['Inter', 'system-ui', 'sans-serif'],
-            display: ['Fraunces', 'Georgia', 'serif']
+            display: ['Fraunces', 'Georgia', 'serif'],
+            mono: ['"JetBrains Mono"', 'ui-monospace', 'monospace']
           },
           colors: {
             ink: {
@@ -36,7 +34,6 @@
               750: '#152949',
               700: '#1A325A',
               600: '#223F73',
-              500: '#2D5092',
             },
             gold: {
               50:  '#FBF6E6',
@@ -49,10 +46,6 @@
               700: '#665323',
             },
           },
-          boxShadow: {
-            'glow-gold': '0 0 0 1px rgba(201,169,97,0.25), 0 10px 40px -10px rgba(201,169,97,0.35)',
-            'card': '0 1px 0 0 rgba(255,255,255,0.04) inset, 0 20px 50px -20px rgba(0,0,0,0.6)',
-          }
         }
       }
     };
@@ -65,548 +58,655 @@
       --ink-950: #060E1F;
       --ink-900: #0A1628;
       --ink-800: #11213D;
-      --ink-700: #1A325A;
-      --line: rgba(201, 169, 97, 0.14);
-      --line-strong: rgba(201, 169, 97, 0.32);
     }
-
     html { scroll-behavior: smooth; }
-
     body {
       background-color: var(--ink-950);
       background-image:
-        radial-gradient(ellipse 80% 50% at 50% -10%, rgba(201, 169, 97, 0.10), transparent 60%),
-        radial-gradient(ellipse 60% 40% at 100% 30%, rgba(45, 80, 146, 0.15), transparent 60%),
-        radial-gradient(ellipse 60% 40% at 0% 70%, rgba(45, 80, 146, 0.12), transparent 60%);
+        radial-gradient(ellipse 60% 35% at 100% 0%,  rgba(201,169,97,0.06), transparent 70%),
+        radial-gradient(ellipse 60% 35% at 0% 100%, rgba(45,80,146,0.10), transparent 70%);
       background-attachment: fixed;
     }
-
     .font-display { font-family: 'Fraunces', Georgia, serif; font-optical-sizing: auto; }
 
-    /* Subtle hairline grid background for cards */
-    .bg-grid {
-      background-image:
-        linear-gradient(to right, rgba(201,169,97,0.04) 1px, transparent 1px),
-        linear-gradient(to bottom, rgba(201,169,97,0.04) 1px, transparent 1px);
-      background-size: 32px 32px;
+    /* Section anchor offset for sticky header (none here, but useful) */
+    section[id] { scroll-margin-top: 24px; }
+
+    /* Card frame for "screens" */
+    .screen {
+      background: linear-gradient(180deg, #0F1E36 0%, #0A1628 100%);
+      border: 1px solid rgba(201,169,97,0.16);
+      box-shadow:
+        0 1px 0 0 rgba(255,255,255,0.04) inset,
+        0 30px 80px -30px rgba(0,0,0,0.7);
+      border-radius: 16px;
+      overflow: hidden;
     }
 
-    /* Gradient text */
+    /* Inner panel */
+    .panel {
+      background: rgba(10, 22, 40, 0.6);
+      border: 1px solid rgba(255,255,255,0.05);
+      border-radius: 12px;
+    }
+    .panel-elevated {
+      background: rgba(15, 30, 54, 0.85);
+      border: 1px solid rgba(255,255,255,0.06);
+      border-radius: 12px;
+    }
+
     .text-gold-gradient {
-      background: linear-gradient(135deg, #E0BE6D 0%, #C9A961 40%, #B6953E 100%);
+      background: linear-gradient(135deg, #E0BE6D 0%, #C9A961 50%, #B6953E 100%);
       -webkit-background-clip: text;
       background-clip: text;
       -webkit-text-fill-color: transparent;
       color: transparent;
     }
 
-    /* Hero glow ring */
-    .ring-gold-soft {
-      box-shadow:
-        0 0 0 1px rgba(201, 169, 97, 0.25),
-        0 0 60px -10px rgba(201, 169, 97, 0.35),
-        0 30px 80px -30px rgba(0, 0, 0, 0.8);
-    }
+    .divider-vertical { border-left: 1px solid rgba(255,255,255,0.06); }
 
-    /* Animated marquee bar */
-    @keyframes ticker {
-      0%   { transform: translateX(0); }
-      100% { transform: translateX(-50%); }
+    /* Side index */
+    .side-link {
+      display: flex; gap: .65rem;
+      padding: .35rem .55rem; padding-left: 1rem;
+      border-left: 2px solid transparent;
+      color: #6A7B96;
+      transition: all .15s ease;
+      font-size: 13px;
     }
-    .ticker-track {
-      animation: ticker 60s linear infinite;
-    }
-
-    /* Tab pill */
-    .tab-pill {
-      position: relative;
-      transition: color .2s ease, background-color .2s ease;
-    }
-    .tab-pill[aria-selected="true"] {
-      background: linear-gradient(180deg, rgba(201,169,97,0.18), rgba(201,169,97,0.06));
+    .side-link:hover { color: #E0BE6D; }
+    .side-link .num { font-variant-numeric: tabular-nums; opacity: .7; }
+    .side-link.active {
       color: #F4E9C2;
-      box-shadow: inset 0 0 0 1px rgba(201,169,97,0.45);
+      border-left-color: #C9A961;
+      background: linear-gradient(90deg, rgba(201,169,97,0.08), transparent 70%);
     }
+    .side-link.active .num { opacity: 1; color: #C9A961; }
 
-    /* KPI card hover */
-    .kpi {
-      transition: transform .25s ease, border-color .25s ease, background-color .25s ease;
+    /* App-style nav item (used inside many screens for left rails) */
+    .nav-item {
+      display: flex; align-items: center; gap: .65rem;
+      padding: .55rem .75rem;
+      border-radius: 8px; font-size: 13px; color: #95A3BD;
     }
-    .kpi:hover {
-      transform: translateY(-2px);
-      border-color: rgba(201,169,97,0.4);
+    .nav-item:hover { background: rgba(255,255,255,0.04); color: #E8ECF4; }
+    .nav-item.active {
+      background: rgba(201,169,97,0.10);
+      color: #F4E9C2;
+      box-shadow: inset 0 0 0 1px rgba(201,169,97,0.25);
     }
+    .nav-item .icon { width: 16px; height: 16px; opacity: .8; }
 
-    /* Soft scroll-snap for the demo phone preview */
-    .no-scrollbar::-webkit-scrollbar { display: none; }
-    .no-scrollbar { scrollbar-width: none; }
-
-    /* Faux window chrome */
-    .window-chrome {
-      background:
-        linear-gradient(180deg, rgba(255,255,255,0.04), rgba(255,255,255,0)),
-        linear-gradient(180deg, #0F1E36 0%, #0A1628 100%);
-      border: 1px solid rgba(201,169,97,0.18);
-    }
-
-    /* Trend arrows */
-    .trend-up   { color: #5EE6A0; }
-    .trend-down { color: #FF8FA3; }
-
-    /* Hero stat row dividers */
-    .divide-gold > * + * { border-left: 1px solid rgba(201,169,97,0.18); }
-
-    /* Reveal on scroll */
-    .reveal { opacity: 0; transform: translateY(16px); transition: opacity .8s ease, transform .8s ease; }
-    .reveal.in { opacity: 1; transform: none; }
+    /* Trend marks */
+    .up   { color: #5EE6A0; }
+    .down { color: #FF8FA3; }
 
     /* Sortable table head */
     th.sortable { cursor: pointer; user-select: none; }
     th.sortable:hover { color: #E0BE6D; }
-    th .sort-arrow { opacity: .35; margin-left: .25rem; font-size: .75em; }
-    th.sorted-asc  .sort-arrow,
+    th .sort-arrow { opacity: .35; margin-left: .25rem; font-size: .8em; }
+    th.sorted-asc .sort-arrow,
     th.sorted-desc .sort-arrow { opacity: 1; color: #E0BE6D; }
 
-    /* Upload "drop zone" */
+    /* Tiny "live" dot */
+    .pulse {
+      width: 6px; height: 6px; border-radius: 9999px; background: #5EE6A0;
+      box-shadow: 0 0 0 0 rgba(94,230,160,0.6);
+      animation: pulse 1.6s infinite;
+    }
+    @keyframes pulse {
+      0%   { box-shadow: 0 0 0 0 rgba(94,230,160,0.55); }
+      70%  { box-shadow: 0 0 0 8px rgba(94,230,160,0); }
+      100% { box-shadow: 0 0 0 0 rgba(94,230,160,0); }
+    }
+
+    /* Funnel rows */
+    .funnel-row {
+      display: grid;
+      grid-template-columns: 130px 1fr 100px 60px;
+      align-items: center;
+      gap: 12px;
+      padding: 6px 0;
+    }
+
+    /* Drop area */
     .dropzone {
       background:
         repeating-linear-gradient(45deg, rgba(201,169,97,0.05) 0 12px, transparent 12px 24px),
         linear-gradient(180deg, rgba(201,169,97,0.04), rgba(201,169,97,0));
+      border: 2px dashed rgba(201,169,97,0.32);
     }
 
-    /* Selected department highlight */
-    .filter-chip {
-      display: inline-flex; align-items: center; gap: .4rem;
-      padding: .25rem .65rem; border-radius: 9999px;
-      background: rgba(201,169,97,0.12);
-      border: 1px solid rgba(201,169,97,0.35);
-      color: #F4E9C2; font-size: 12px; font-weight: 500;
-      letter-spacing: .02em;
+    /* Step indicator */
+    .step-pill {
+      display: inline-flex; align-items: center; gap: .45rem;
+      font-size: 12px; padding: .25rem .65rem;
+      border-radius: 9999px;
+      border: 1px solid rgba(255,255,255,0.08);
+      color: #95A3BD;
     }
+    .step-pill.active { color: #F4E9C2; border-color: rgba(201,169,97,0.4); background: rgba(201,169,97,0.10); }
+    .step-pill.done   { color: #5EE6A0; border-color: rgba(94,230,160,0.35); background: rgba(94,230,160,0.06); }
 
-    /* Disable Tailwind preflight for charts (echarts inserts svg children) */
+    /* Subtle column scrollbar styles for sidebar */
+    .no-scrollbar::-webkit-scrollbar { display: none; }
+    .no-scrollbar { scrollbar-width: none; }
+
     .chart svg { max-width: none; }
 
-    /* Reduce motion */
     @media (prefers-reduced-motion: reduce) {
-      .ticker-track { animation: none; }
-      .reveal { opacity: 1; transform: none; transition: none; }
+      .pulse { animation: none; }
+      html { scroll-behavior: auto; }
     }
   </style>
 </head>
 <body class="text-slate-100 font-sans antialiased min-h-screen">
 
-  <!-- ============ NAV ============ -->
-  <header class="sticky top-0 z-50 backdrop-blur-xl bg-ink-950/70 border-b border-white/5">
-    <div class="max-w-7xl mx-auto px-6 lg:px-10 h-16 flex items-center justify-between">
-      <a href="#top" class="flex items-center gap-2.5 group">
-        <span class="grid place-items-center w-9 h-9 rounded-lg bg-ink-800 border border-gold-400/30 group-hover:border-gold-400/60 transition">
-          <svg viewBox="0 0 24 24" class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="color:#E0BE6D">
+  <!-- ============ Page header (minimal) ============ -->
+  <header class="border-b border-white/5">
+    <div class="max-w-[1400px] mx-auto px-6 lg:px-10 h-14 flex items-center justify-between">
+      <div class="flex items-center gap-2.5">
+        <span class="grid place-items-center w-8 h-8 rounded-md bg-ink-800 border border-gold-400/30">
+          <svg viewBox="0 0 24 24" class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="color:#E0BE6D">
             <path d="M3 17 L3 7 L8 11 L12 7 L17 13 L21 9"/>
             <circle cx="21" cy="9" r="1.6" fill="#E0BE6D"/>
           </svg>
         </span>
-        <span class="font-display text-xl tracking-tight">
-          Kanzlei<span class="text-gold-gradient">Cockpit</span>
-        </span>
-      </a>
-
-      <nav class="hidden md:flex items-center gap-8 text-sm text-slate-300">
-        <a href="#problem" class="hover:text-gold-300 transition">Warum</a>
-        <a href="#demo"     class="hover:text-gold-300 transition">Live-Demo</a>
-        <a href="#features" class="hover:text-gold-300 transition">Funktionen</a>
-        <a href="#workflow" class="hover:text-gold-300 transition">So funktioniert es</a>
-        <a href="#security" class="hover:text-gold-300 transition">Sicherheit</a>
-      </nav>
-
-      <a href="#demo" class="hidden md:inline-flex items-center gap-2 text-sm font-medium px-4 py-2 rounded-lg border border-gold-400/40 text-gold-100 hover:bg-gold-400/10 transition">
-        Demo erkunden
-        <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"/><path d="m13 5 7 7-7 7"/></svg>
-      </a>
+        <span class="font-display text-lg tracking-tight">Kanzlei<span class="text-gold-gradient">Cockpit</span></span>
+        <span class="hidden sm:inline mx-2 text-slate-600">·</span>
+        <span class="hidden sm:inline text-xs uppercase tracking-[0.2em] text-slate-500">UI Preview</span>
+      </div>
+      <div class="text-xs text-slate-500 hidden md:flex items-center gap-3">
+        <span>Demo-Daten · Brenner &amp; Voss Partner mbB · Q2 2026</span>
+        <span class="text-slate-700">|</span>
+        <span class="font-mono">v0.3</span>
+      </div>
     </div>
   </header>
 
-  <!-- ============ HERO ============ -->
-  <section id="top" class="relative overflow-hidden">
-    <div class="max-w-7xl mx-auto px-6 lg:px-10 pt-20 pb-16 lg:pt-28 lg:pb-24">
-      <div class="grid lg:grid-cols-12 gap-12 items-center">
-        <div class="lg:col-span-7">
-          <div class="inline-flex items-center gap-2 text-[11px] tracking-[0.22em] uppercase text-gold-300/90 font-medium mb-6">
-            <span class="w-1.5 h-1.5 rounded-full bg-gold-400"></span>
-            Speziell für Patentanwaltskanzleien
-          </div>
+  <!-- ============ Layout: side-index + content ============ -->
+  <div class="max-w-[1400px] mx-auto px-6 lg:px-10 py-8 lg:py-12 grid grid-cols-12 gap-8 lg:gap-10">
 
-          <h1 class="font-display text-4xl sm:text-5xl lg:text-6xl xl:text-7xl leading-[1.05] tracking-tight text-slate-50">
-            Führen Sie Ihre Kanzlei mit
-            <span class="text-gold-gradient italic">Daten.</span>
-            <br/>
-            Nicht mit
-            <span class="relative inline-block">
-              Bauchgefühl.
-              <svg class="absolute -bottom-2 left-0 w-full h-3" viewBox="0 0 300 12" preserveAspectRatio="none" fill="none">
-                <path d="M2 8 Q 60 2, 150 6 T 298 5" stroke="#C9A961" stroke-width="2" stroke-linecap="round"/>
-              </svg>
-            </span>
-          </h1>
+    <!-- Side index -->
+    <aside class="hidden lg:block col-span-3 xl:col-span-2">
+      <div class="sticky top-6">
+        <div class="text-[10px] uppercase tracking-[0.22em] text-slate-500 mb-3 pl-4">Screens</div>
+        <nav id="sideNav" class="flex flex-col">
+          <a href="#s01" class="side-link" data-target="s01"><span class="num">01</span><span>Datev-Import</span></a>
+          <a href="#s02" class="side-link" data-target="s02"><span class="num">02</span><span>Executive Cockpit</span></a>
+          <a href="#s03" class="side-link" data-target="s03"><span class="num">03</span><span>Abteilungs-Analyse</span></a>
+          <a href="#s04" class="side-link" data-target="s04"><span class="num">04</span><span>Anwalts-Matrix</span></a>
+          <a href="#s05" class="side-link" data-target="s05"><span class="num">05</span><span>Anwalts-Profil</span></a>
+          <a href="#s06" class="side-link" data-target="s06"><span class="num">06</span><span>Mandanten-Liste</span></a>
+          <a href="#s07" class="side-link" data-target="s07"><span class="num">07</span><span>Mandanten-Detail</span></a>
+          <a href="#s08" class="side-link" data-target="s08"><span class="num">08</span><span>Geografische Verteilung</span></a>
+          <a href="#s09" class="side-link" data-target="s09"><span class="num">09</span><span>Neuaufträge &amp; Pipeline</span></a>
+          <a href="#s10" class="side-link" data-target="s10"><span class="num">10</span><span>Buchungs-Stream</span></a>
+          <a href="#s11" class="side-link" data-target="s11"><span class="num">11</span><span>Quartals-Briefing</span></a>
+        </nav>
+      </div>
+    </aside>
 
-          <p class="mt-7 text-lg lg:text-xl text-slate-300/90 max-w-2xl leading-relaxed">
-            KanzleiCockpit verwandelt Ihren Datev-Export in das Finanz-Cockpit,
-            das Managing Partner immer wollten. Abteilungen, Anwälte, Mandanten
-            und Märkte – in einer Visualisierung.
+    <!-- Main: stacked sections -->
+    <main class="col-span-12 lg:col-span-9 xl:col-span-10 space-y-20 lg:space-y-28">
+
+      <!-- ============ 01 / DATEV-IMPORT ============ -->
+      <section id="s01">
+        <div class="mb-6">
+          <div class="text-[11px] tracking-[0.22em] uppercase text-gold-300/90 font-medium">01 / Import</div>
+          <h2 class="font-display text-2xl sm:text-3xl mt-1">Datev-Import &amp; Mapping</h2>
+          <p class="text-sm text-slate-400 mt-2 max-w-2xl">
+            Buchungssätze, Lohnjournal und OPOS-Liste werden eingelesen. Sachkonten werden automatisch
+            auf Abteilungen, Mandanten und Mitarbeiter gemappt; Mehrdeutigkeiten kommen zur einmaligen
+            Bestätigung in eine Review-Liste.
           </p>
+        </div>
 
-          <p class="mt-3 text-sm text-slate-400">
-            Kein Datev-Ersatz. Ein Datev-Verstärker.
+        <div class="screen">
+          <!-- step bar -->
+          <div class="flex items-center gap-3 px-5 py-3.5 border-b border-white/5 bg-ink-900/70">
+            <span class="step-pill done"><span>✓</span>Upload</span>
+            <span class="text-slate-700">→</span>
+            <span class="step-pill active"><span>2</span>Mapping</span>
+            <span class="text-slate-700">→</span>
+            <span class="step-pill"><span>3</span>Validierung</span>
+            <div class="ml-auto text-xs text-slate-400">5 Dateien · 87 412 Buchungen · 1 248 Sachkonten</div>
+          </div>
+
+          <div class="grid lg:grid-cols-12 gap-0">
+            <!-- left: file list -->
+            <div class="lg:col-span-3 border-b lg:border-b-0 lg:border-r border-white/5 p-5">
+              <div class="text-[11px] uppercase tracking-wider text-slate-500 mb-3">Hochgeladen</div>
+              <ul class="space-y-2 text-sm">
+                <li class="flex items-center justify-between p-2 rounded-md hover:bg-white/5">
+                  <span class="flex items-center gap-2 text-slate-200">
+                    <svg class="w-4 h-4 text-gold-300" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+                    EXTF_Buchungen_2026.xml
+                  </span>
+                  <span class="text-[10px] text-emerald-300">OK</span>
+                </li>
+                <li class="flex items-center justify-between p-2 rounded-md hover:bg-white/5">
+                  <span class="flex items-center gap-2 text-slate-200">
+                    <svg class="w-4 h-4 text-gold-300" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+                    Lohnjournal_2026Q1.csv
+                  </span>
+                  <span class="text-[10px] text-emerald-300">OK</span>
+                </li>
+                <li class="flex items-center justify-between p-2 rounded-md hover:bg-white/5">
+                  <span class="flex items-center gap-2 text-slate-200">
+                    <svg class="w-4 h-4 text-gold-300" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+                    OPOS_Forderungen.csv
+                  </span>
+                  <span class="text-[10px] text-emerald-300">OK</span>
+                </li>
+                <li class="flex items-center justify-between p-2 rounded-md hover:bg-white/5">
+                  <span class="flex items-center gap-2 text-slate-200">
+                    <svg class="w-4 h-4 text-gold-300" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+                    Stammdaten_Mandanten.csv
+                  </span>
+                  <span class="text-[10px] text-emerald-300">OK</span>
+                </li>
+                <li class="flex items-center justify-between p-2 rounded-md hover:bg-white/5">
+                  <span class="flex items-center gap-2 text-slate-200">
+                    <svg class="w-4 h-4 text-amber-300" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+                    OPOS_Verbindlich.csv
+                  </span>
+                  <span class="text-[10px] text-amber-300">2 Warn.</span>
+                </li>
+              </ul>
+
+              <div class="mt-6 dropzone rounded-xl p-4 text-center">
+                <div class="mx-auto w-9 h-9 grid place-items-center rounded-lg bg-gold-400/10 border border-gold-400/30 text-gold-200">
+                  <svg viewBox="0 0 24 24" class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><path d="m17 8-5-5-5 5"/><path d="M12 3v12"/></svg>
+                </div>
+                <div class="text-xs text-slate-300 mt-2">Weitere Datei ablegen</div>
+              </div>
+            </div>
+
+            <!-- center: mapping table -->
+            <div class="lg:col-span-6 p-5">
+              <div class="flex items-center justify-between mb-3">
+                <div class="text-[11px] uppercase tracking-wider text-slate-500">Sachkonten-Zuordnung</div>
+                <div class="text-[11px] text-slate-400">14 von 1 248 zur Bestätigung</div>
+              </div>
+              <div class="rounded-lg border border-white/5 overflow-hidden">
+                <table class="min-w-full text-sm">
+                  <thead class="bg-ink-800/70 text-slate-300 text-xs uppercase tracking-wider">
+                    <tr>
+                      <th class="text-left px-3 py-2.5 font-medium">Konto</th>
+                      <th class="text-left px-3 py-2.5 font-medium">Bezeichnung</th>
+                      <th class="text-left px-3 py-2.5 font-medium">Erkannt als</th>
+                      <th class="text-left px-3 py-2.5 font-medium">Status</th>
+                    </tr>
+                  </thead>
+                  <tbody class="divide-y divide-white/5">
+                    <tr><td class="px-3 py-2.5 font-mono text-slate-200">8400</td><td class="px-3 py-2.5 text-slate-300">Erlöse Patente Inland</td><td class="px-3 py-2.5"><span class="text-gold-200">Abteilung · Patente</span></td><td class="px-3 py-2.5"><span class="text-[10px] text-emerald-300">automatisch</span></td></tr>
+                    <tr><td class="px-3 py-2.5 font-mono text-slate-200">8401</td><td class="px-3 py-2.5 text-slate-300">Erlöse Patente EU</td><td class="px-3 py-2.5"><span class="text-gold-200">Abteilung · Patente</span></td><td class="px-3 py-2.5"><span class="text-[10px] text-emerald-300">automatisch</span></td></tr>
+                    <tr><td class="px-3 py-2.5 font-mono text-slate-200">8420</td><td class="px-3 py-2.5 text-slate-300">Erlöse Marken</td><td class="px-3 py-2.5"><span class="text-gold-200">Abteilung · Marken</span></td><td class="px-3 py-2.5"><span class="text-[10px] text-emerald-300">automatisch</span></td></tr>
+                    <tr><td class="px-3 py-2.5 font-mono text-slate-200">8475</td><td class="px-3 py-2.5 text-slate-300">Sonst. Erlöse intl.</td><td class="px-3 py-2.5">
+                      <select class="bg-ink-800 border border-amber-400/40 text-amber-100 text-xs rounded-md px-2 py-1 focus:outline-none">
+                        <option>— bitte wählen —</option>
+                        <option>Abteilung · Patente</option>
+                        <option>Abteilung · Marken</option>
+                        <option>Abteilung · Litigation</option>
+                        <option>Abteilung · Designs</option>
+                      </select>
+                    </td><td class="px-3 py-2.5"><span class="text-[10px] text-amber-300">Review</span></td></tr>
+                    <tr><td class="px-3 py-2.5 font-mono text-slate-200">6020</td><td class="px-3 py-2.5 text-slate-300">Löhne &amp; Gehälter Anwälte</td><td class="px-3 py-2.5"><span class="text-gold-200">Personalkosten · Berufsträger</span></td><td class="px-3 py-2.5"><span class="text-[10px] text-emerald-300">automatisch</span></td></tr>
+                    <tr><td class="px-3 py-2.5 font-mono text-slate-200">6030</td><td class="px-3 py-2.5 text-slate-300">Löhne &amp; Gehälter Verwaltung</td><td class="px-3 py-2.5"><span class="text-gold-200">Personalkosten · Verwaltung</span></td><td class="px-3 py-2.5"><span class="text-[10px] text-emerald-300">automatisch</span></td></tr>
+                    <tr><td class="px-3 py-2.5 font-mono text-slate-200">6310</td><td class="px-3 py-2.5 text-slate-300">Mietaufwand Büro</td><td class="px-3 py-2.5"><span class="text-gold-200">Overhead</span></td><td class="px-3 py-2.5"><span class="text-[10px] text-emerald-300">automatisch</span></td></tr>
+                    <tr><td class="px-3 py-2.5 font-mono text-slate-200">10421</td><td class="px-3 py-2.5 text-slate-300">Helios Pharma AG</td><td class="px-3 py-2.5"><span class="text-gold-200">Mandant</span></td><td class="px-3 py-2.5"><span class="text-[10px] text-emerald-300">aus Stammdaten</span></td></tr>
+                    <tr><td class="px-3 py-2.5 font-mono text-slate-200">10487</td><td class="px-3 py-2.5 text-slate-300">Sumire Robotics K.K.</td><td class="px-3 py-2.5"><span class="text-gold-200">Mandant</span></td><td class="px-3 py-2.5"><span class="text-[10px] text-emerald-300">aus Stammdaten</span></td></tr>
+                    <tr><td class="px-3 py-2.5 font-mono text-slate-200">10999</td><td class="px-3 py-2.5 text-slate-300">Diverse Kleinmandanten</td><td class="px-3 py-2.5">
+                      <select class="bg-ink-800 border border-amber-400/40 text-amber-100 text-xs rounded-md px-2 py-1 focus:outline-none">
+                        <option>— bitte wählen —</option>
+                        <option>Sammelkonto</option>
+                        <option>Mandant einzeln zuordnen</option>
+                      </select>
+                    </td><td class="px-3 py-2.5"><span class="text-[10px] text-amber-300">Review</span></td></tr>
+                  </tbody>
+                </table>
+              </div>
+              <div class="mt-3 text-xs text-slate-500">Beim ersten Lauf einmal bestätigen — danach merkt sich KanzleiCockpit die Zuordnung pro Sachkonto.</div>
+            </div>
+
+            <!-- right: parser status -->
+            <div class="lg:col-span-3 border-t lg:border-t-0 lg:border-l border-white/5 p-5 bg-ink-900/40">
+              <div class="text-[11px] uppercase tracking-wider text-slate-500 mb-3">Parser-Status</div>
+              <ul class="space-y-3 text-sm">
+                <li class="flex items-center justify-between"><span class="text-slate-300">Buchungssätze</span><span class="font-mono text-slate-100">87 412</span></li>
+                <li class="flex items-center justify-between"><span class="text-slate-300">Davon zugeordnet</span><span class="font-mono text-emerald-300">87 398</span></li>
+                <li class="flex items-center justify-between"><span class="text-slate-300">Mandanten erkannt</span><span class="font-mono text-slate-100">412</span></li>
+                <li class="flex items-center justify-between"><span class="text-slate-300">Berufsträger</span><span class="font-mono text-slate-100">31</span></li>
+                <li class="flex items-center justify-between"><span class="text-slate-300">Abteilungen</span><span class="font-mono text-slate-100">5</span></li>
+                <li class="flex items-center justify-between"><span class="text-slate-300">Periode</span><span class="font-mono text-slate-100">01.01.–30.06.</span></li>
+              </ul>
+
+              <div class="mt-6 panel p-3">
+                <div class="text-[11px] uppercase tracking-wider text-amber-200/90 mb-1">2 Warnungen</div>
+                <ul class="text-xs text-slate-300 space-y-1.5">
+                  <li>· 14 Konten ohne Mapping — Cockpit zeigt diese als <em class="not-italic text-slate-100">„nicht zugeordnet"</em>.</li>
+                  <li>· Buchung am 12.04. (Konto 6020) hat keinen Mitarbeiter — Defaultzuweisung Verwaltung.</li>
+                </ul>
+              </div>
+
+              <button class="mt-6 w-full inline-flex items-center justify-center gap-2 px-3 py-2.5 rounded-lg bg-gradient-to-b from-gold-300 to-gold-500 text-ink-950 font-semibold text-sm">
+                Mapping bestätigen
+                <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"/><path d="m13 5 7 7-7 7"/></svg>
+              </button>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ============ 02 / EXECUTIVE COCKPIT ============ -->
+      <section id="s02">
+        <div class="mb-6">
+          <div class="text-[11px] tracking-[0.22em] uppercase text-gold-300/90 font-medium">02 / Cockpit</div>
+          <h2 class="font-display text-2xl sm:text-3xl mt-1">Executive Cockpit</h2>
+          <p class="text-sm text-slate-400 mt-2 max-w-2xl">
+            Top-Level-Sicht für Managing Partner. Die wichtigsten Kennzahlen, der laufende Trend und
+            auffällige Bewegungen der letzten 30 Tage auf einer Seite.
           </p>
-
-          <div class="mt-9 flex flex-wrap items-center gap-4">
-            <a href="#demo" class="group inline-flex items-center gap-2 px-6 py-3.5 rounded-xl bg-gradient-to-b from-gold-300 to-gold-500 text-ink-950 font-semibold shadow-glow-gold hover:from-gold-200 hover:to-gold-400 transition">
-              Live-Demo erkunden
-              <svg class="w-4 h-4 group-hover:translate-x-0.5 transition" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"/><path d="m13 5 7 7-7 7"/></svg>
-            </a>
-            <a href="#workflow" class="inline-flex items-center gap-2 px-6 py-3.5 rounded-xl border border-white/15 text-slate-200 hover:border-gold-400/40 hover:text-gold-100 transition">
-              So funktioniert es
-            </a>
-          </div>
-
-          <!-- Hero KPI strip -->
-          <div class="mt-12 grid grid-cols-3 max-w-xl divide-gold border border-gold-400/15 rounded-xl bg-ink-900/60 backdrop-blur">
-            <div class="px-5 py-4">
-              <div class="font-display text-2xl text-gold-200">4 Std.</div>
-              <div class="text-xs text-slate-400 mt-1">vom Export zur Insight</div>
-            </div>
-            <div class="px-5 py-4">
-              <div class="font-display text-2xl text-gold-200">100%</div>
-              <div class="text-xs text-slate-400 mt-1">Hosting in Deutschland</div>
-            </div>
-            <div class="px-5 py-4">
-              <div class="font-display text-2xl text-gold-200">0</div>
-              <div class="text-xs text-slate-400 mt-1">Eingriff in Datev</div>
-            </div>
-          </div>
         </div>
 
-        <!-- Hero Preview Card -->
-        <div class="lg:col-span-5">
-          <div class="relative">
-            <div class="absolute -inset-4 bg-gradient-to-br from-gold-400/20 via-transparent to-ink-700/40 rounded-3xl blur-2xl"></div>
-            <div class="relative window-chrome rounded-2xl shadow-card ring-gold-soft overflow-hidden">
-              <!-- Window header -->
-              <div class="flex items-center gap-2 px-4 py-3 border-b border-white/5 bg-ink-900/70">
-                <span class="w-2.5 h-2.5 rounded-full bg-white/15"></span>
-                <span class="w-2.5 h-2.5 rounded-full bg-white/15"></span>
-                <span class="w-2.5 h-2.5 rounded-full bg-white/15"></span>
-                <div class="ml-3 text-[11px] tracking-wider text-slate-400 uppercase">cockpit · Q2 2026</div>
-                <div class="ml-auto flex items-center gap-1.5 text-[10px] text-emerald-300/90">
-                  <span class="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"></span>
-                  Live
-                </div>
-              </div>
-              <!-- Preview content -->
-              <div class="p-5">
-                <div class="flex items-baseline justify-between">
-                  <div>
-                    <div class="text-[11px] uppercase tracking-wider text-slate-400">Kanzleiumsatz YTD</div>
-                    <div class="font-display text-3xl text-slate-50 mt-1">€ 14.286.430</div>
-                  </div>
-                  <div class="text-right">
-                    <div class="text-[11px] uppercase tracking-wider text-slate-400">vs. Vorjahr</div>
-                    <div class="text-emerald-300 font-semibold mt-1 flex items-center gap-1 justify-end">
-                      <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="m6 17 6-6 4 4 4-6"/><path d="M14 7h6v6"/></svg>
-                      +11,4 %
-                    </div>
-                  </div>
-                </div>
-
-                <div id="heroChart" class="chart w-full h-44 mt-4"></div>
-
-                <div class="grid grid-cols-3 gap-2 mt-4">
-                  <div class="rounded-lg bg-ink-800/70 border border-white/5 px-3 py-2.5">
-                    <div class="text-[10px] uppercase text-slate-400">Marge</div>
-                    <div class="text-slate-100 font-semibold">38,6 %</div>
-                  </div>
-                  <div class="rounded-lg bg-ink-800/70 border border-white/5 px-3 py-2.5">
-                    <div class="text-[10px] uppercase text-slate-400">Mandanten</div>
-                    <div class="text-slate-100 font-semibold">412</div>
-                  </div>
-                  <div class="rounded-lg bg-ink-800/70 border border-white/5 px-3 py-2.5">
-                    <div class="text-[10px] uppercase text-slate-400">Realization</div>
-                    <div class="text-slate-100 font-semibold">86,4 %</div>
-                  </div>
-                </div>
-              </div>
+        <div class="screen p-5 sm:p-7">
+          <!-- KPI strip -->
+          <div class="grid grid-cols-2 md:grid-cols-4 gap-3 mb-5">
+            <div class="panel p-4">
+              <div class="text-[11px] uppercase tracking-wider text-slate-400">Umsatz YTD</div>
+              <div class="font-display text-2xl mt-1 text-slate-50">€ 14,29 M</div>
+              <div class="text-xs text-emerald-300 mt-1">+11,4 % vs. Vorjahr</div>
             </div>
-
-            <!-- Floating "Top Mandant" card -->
-            <div class="hidden md:block absolute -left-10 bottom-10 w-64 rounded-xl bg-ink-800/95 backdrop-blur border border-gold-400/30 p-4 shadow-card">
-              <div class="text-[10px] uppercase tracking-wider text-gold-300/80">Profitabelster Mandant</div>
-              <div class="font-display text-lg mt-1 text-slate-50">Helios Pharma AG</div>
-              <div class="mt-2 flex items-center gap-2 text-xs text-slate-300">
-                <span class="text-emerald-300 font-medium">+24 % Aufträge</span>
-                <span class="text-slate-500">·</span>
-                <span>Marge 61 %</span>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
-
-    <!-- Marquee / trust bar -->
-    <div class="border-y border-white/5 bg-ink-950/60 overflow-hidden">
-      <div class="ticker-track flex gap-12 py-4 whitespace-nowrap text-xs uppercase tracking-[0.22em] text-slate-500">
-        <!-- Doubled list for seamless loop -->
-        <div class="flex gap-12 shrink-0">
-          <span>Vollständige Datev-Kompatibilität</span><span class="text-gold-400/60">◆</span>
-          <span>Hosting in Frankfurt</span><span class="text-gold-400/60">◆</span>
-          <span>ISO 27001 in Vorbereitung</span><span class="text-gold-400/60">◆</span>
-          <span>DSGVO konform</span><span class="text-gold-400/60">◆</span>
-          <span>Speziell für IP-Kanzleien</span><span class="text-gold-400/60">◆</span>
-          <span>Mandantenanalytik in Echtzeit</span><span class="text-gold-400/60">◆</span>
-        </div>
-        <div class="flex gap-12 shrink-0" aria-hidden="true">
-          <span>Vollständige Datev-Kompatibilität</span><span class="text-gold-400/60">◆</span>
-          <span>Hosting in Frankfurt</span><span class="text-gold-400/60">◆</span>
-          <span>ISO 27001 in Vorbereitung</span><span class="text-gold-400/60">◆</span>
-          <span>DSGVO konform</span><span class="text-gold-400/60">◆</span>
-          <span>Speziell für IP-Kanzleien</span><span class="text-gold-400/60">◆</span>
-          <span>Mandantenanalytik in Echtzeit</span><span class="text-gold-400/60">◆</span>
-        </div>
-      </div>
-    </div>
-  </section>
-
-  <!-- ============ PROBLEM ============ -->
-  <section id="problem" class="relative">
-    <div class="max-w-7xl mx-auto px-6 lg:px-10 py-24 lg:py-32">
-      <div class="max-w-3xl">
-        <div class="text-[11px] tracking-[0.22em] uppercase text-gold-300/90 font-medium mb-5">Das Problem</div>
-        <h2 class="font-display text-3xl sm:text-4xl lg:text-5xl tracking-tight leading-[1.1]">
-          Datev liefert <span class="text-slate-400">Zahlen.</span>
-          <br class="hidden sm:block"/>
-          Wir liefern <span class="text-gold-gradient italic">Antworten.</span>
-        </h2>
-        <p class="mt-6 text-lg text-slate-300 leading-relaxed max-w-2xl">
-          Buchhaltung ist keine Strategie. Wer eine Kanzlei führen will,
-          braucht mehr als Salden — er braucht Klarheit über jeden Mandanten,
-          jede Abteilung, jeden Anwalt und jeden Markt.
-        </p>
-      </div>
-
-      <div class="mt-14 grid md:grid-cols-3 gap-5">
-        <div class="rounded-2xl border border-white/5 bg-ink-900/60 p-7 hover:border-gold-400/30 transition">
-          <div class="font-display text-5xl text-gold-400/80">01</div>
-          <h3 class="font-display text-xl mt-4 text-slate-50">Sie sehen, was eingenommen wurde.</h3>
-          <p class="mt-3 text-slate-400 leading-relaxed">Aber nicht, <em class="not-italic text-slate-200">wer</em> es erwirtschaftet hat. Welcher Partner. Welcher Junior. Welche Abteilung.</p>
-        </div>
-        <div class="rounded-2xl border border-white/5 bg-ink-900/60 p-7 hover:border-gold-400/30 transition">
-          <div class="font-display text-5xl text-gold-400/80">02</div>
-          <h3 class="font-display text-xl mt-4 text-slate-50">Sie sehen Salden.</h3>
-          <p class="mt-3 text-slate-400 leading-relaxed">Aber keine Trends. Welcher Mandant wächst still? Welcher Mandant schrumpft, bevor Sie es merken?</p>
-        </div>
-        <div class="rounded-2xl border border-white/5 bg-ink-900/60 p-7 hover:border-gold-400/30 transition">
-          <div class="font-display text-5xl text-gold-400/80">03</div>
-          <h3 class="font-display text-xl mt-4 text-slate-50">Sie haben Daten.</h3>
-          <p class="mt-3 text-slate-400 leading-relaxed">Aber keine Entscheidungsgrundlage. Strategie braucht Übersicht — nicht 47 Excel-Tabs.</p>
-        </div>
-      </div>
-    </div>
-  </section>
-
-  <!-- ============ DEMO ============ -->
-  <section id="demo" class="relative">
-    <!-- Section header -->
-    <div class="max-w-7xl mx-auto px-6 lg:px-10 pt-8">
-      <div class="max-w-3xl">
-        <div class="text-[11px] tracking-[0.22em] uppercase text-gold-300/90 font-medium mb-5">Live-Demo</div>
-        <h2 class="font-display text-3xl sm:text-4xl lg:text-5xl tracking-tight leading-[1.1]">
-          Sehen, wie Ihre Kanzlei
-          <span class="text-gold-gradient italic">in Echtzeit</span>
-          aussehen würde.
-        </h2>
-        <p class="mt-6 text-lg text-slate-300/90 leading-relaxed max-w-2xl">
-          Spielen Sie mit den vier Cockpit-Bereichen. Alle Daten anonymisiert,
-          alle Zahlen plausibel — basierend auf der Struktur einer mittelgroßen
-          IP-Kanzlei mit 12 Partnern und 47 Mitarbeitern.
-        </p>
-      </div>
-    </div>
-
-    <!-- Demo container -->
-    <div class="max-w-7xl mx-auto px-6 lg:px-10 mt-10 pb-24">
-      <div class="window-chrome rounded-2xl shadow-card overflow-hidden">
-
-        <!-- Tabs -->
-        <div class="flex flex-wrap items-center justify-between gap-3 px-3 sm:px-5 py-3 border-b border-white/5 bg-ink-900/80">
-          <div role="tablist" class="flex flex-wrap gap-1.5">
-            <button role="tab" aria-selected="true" data-tab="abteilungen" class="tab-pill text-sm px-4 py-2 rounded-lg text-slate-300 hover:text-gold-100">
-              <span class="text-gold-400/80 mr-2">01</span>Abteilungen
-            </button>
-            <button role="tab" aria-selected="false" data-tab="anwaelte" class="tab-pill text-sm px-4 py-2 rounded-lg text-slate-300 hover:text-gold-100">
-              <span class="text-gold-400/80 mr-2">02</span>Anwälte
-            </button>
-            <button role="tab" aria-selected="false" data-tab="mandanten" class="tab-pill text-sm px-4 py-2 rounded-lg text-slate-300 hover:text-gold-100">
-              <span class="text-gold-400/80 mr-2">03</span>Mandanten
-            </button>
-            <button role="tab" aria-selected="false" data-tab="welt" class="tab-pill text-sm px-4 py-2 rounded-lg text-slate-300 hover:text-gold-100">
-              <span class="text-gold-400/80 mr-2">04</span>Welt
-            </button>
-          </div>
-          <div class="flex items-center gap-2 pr-2">
-            <span class="hidden sm:inline text-[11px] uppercase tracking-wider text-slate-500">Zeitraum</span>
-            <select id="periodSelect" class="bg-ink-800 border border-white/10 text-slate-200 text-sm rounded-lg px-3 py-1.5 focus:outline-none focus:border-gold-400/50">
-              <option>YTD 2026</option>
-              <option>Q1 2026</option>
-              <option>12 Monate rollierend</option>
-              <option>Geschäftsjahr 2025</option>
-            </select>
-          </div>
-        </div>
-
-        <!-- =========== TAB: ABTEILUNGEN =========== -->
-        <div data-panel="abteilungen" class="p-5 sm:p-7">
-          <!-- KPI strip + filters -->
-          <div class="flex flex-wrap items-end justify-between gap-4 mb-6">
-            <div>
-              <h3 class="font-display text-2xl">Wo entstehen Kosten? Wo entsteht Umsatz?</h3>
-              <p class="text-sm text-slate-400 mt-1">Klicken Sie auf eine Abteilung im Diagramm, um zu filtern.</p>
-            </div>
-            <div id="abtFilterArea" class="flex items-center gap-2 text-sm">
-              <span class="text-slate-500">Aktueller Filter:</span>
-              <span id="abtFilterChip" class="filter-chip">Alle Abteilungen</span>
-              <button id="abtFilterClear" class="text-slate-400 hover:text-gold-200 text-xs underline underline-offset-4">zurücksetzen</button>
-            </div>
-          </div>
-
-          <div class="grid grid-cols-2 md:grid-cols-4 gap-3 mb-6">
-            <div class="kpi rounded-xl border border-white/5 bg-ink-900/70 p-4">
-              <div class="text-[11px] uppercase tracking-wider text-slate-400">Umsatz</div>
-              <div id="kpiAbtUmsatz" class="font-display text-2xl mt-1 text-slate-50">€ 14,29 M</div>
-              <div class="text-xs text-emerald-300 mt-1">+11,4 % YoY</div>
-            </div>
-            <div class="kpi rounded-xl border border-white/5 bg-ink-900/70 p-4">
-              <div class="text-[11px] uppercase tracking-wider text-slate-400">Personalkosten</div>
-              <div id="kpiAbtKosten" class="font-display text-2xl mt-1 text-slate-50">€ 6,17 M</div>
-              <div class="text-xs text-slate-400 mt-1">43,2 % vom Umsatz</div>
-            </div>
-            <div class="kpi rounded-xl border border-white/5 bg-ink-900/70 p-4">
-              <div class="text-[11px] uppercase tracking-wider text-slate-400">Geleistete Stunden</div>
-              <div id="kpiAbtStunden" class="font-display text-2xl mt-1 text-slate-50">82.640 h</div>
-              <div class="text-xs text-slate-400 mt-1">Realization 86,4 %</div>
-            </div>
-            <div class="kpi rounded-xl border border-white/5 bg-ink-900/70 p-4">
+            <div class="panel p-4">
               <div class="text-[11px] uppercase tracking-wider text-slate-400">Marge nach Personal</div>
-              <div id="kpiAbtMarge" class="font-display text-2xl mt-1 text-gold-200">56,8 %</div>
-              <div class="text-xs text-slate-400 mt-1">vor Overhead</div>
+              <div class="font-display text-2xl mt-1 text-gold-200">56,8 %</div>
+              <div class="text-xs text-slate-400 mt-1">Vorquartal 55,1 %</div>
+            </div>
+            <div class="panel p-4">
+              <div class="text-[11px] uppercase tracking-wider text-slate-400">Aktive Mandanten</div>
+              <div class="font-display text-2xl mt-1 text-slate-50">412</div>
+              <div class="text-xs text-emerald-300 mt-1">+18 in 90 Tagen</div>
+            </div>
+            <div class="panel p-4">
+              <div class="text-[11px] uppercase tracking-wider text-slate-400">Realization</div>
+              <div class="font-display text-2xl mt-1 text-slate-50">86,4 %</div>
+              <div class="text-xs text-slate-400 mt-1">31 Berufsträger</div>
             </div>
           </div>
 
           <div class="grid lg:grid-cols-3 gap-5">
-            <div class="lg:col-span-2 rounded-xl border border-white/5 bg-ink-900/70 p-5">
+            <div class="lg:col-span-2 panel p-5">
               <div class="flex items-center justify-between mb-3">
-                <h4 class="font-medium text-slate-200">Umsatz vs. Personalkosten je Abteilung</h4>
+                <h4 class="text-sm font-medium text-slate-200">Umsatz vs. Personalkosten · 12 Monate</h4>
                 <div class="flex items-center gap-3 text-[11px] text-slate-400">
-                  <span class="inline-flex items-center gap-1"><span class="w-2 h-2 rounded-sm" style="background:#C9A961"></span> Umsatz</span>
-                  <span class="inline-flex items-center gap-1"><span class="w-2 h-2 rounded-sm" style="background:#2D5092"></span> Kosten</span>
+                  <span class="inline-flex items-center gap-1"><span class="w-2 h-2 rounded-sm" style="background:#C9A961"></span>Umsatz</span>
+                  <span class="inline-flex items-center gap-1"><span class="w-2 h-2 rounded-sm" style="background:#2D5092"></span>Personalkosten</span>
+                </div>
+              </div>
+              <div id="cockpitTrend" class="chart w-full h-72"></div>
+            </div>
+            <div class="panel p-5">
+              <h4 class="text-sm font-medium text-slate-200 mb-3">Umsatzanteil nach Abteilung</h4>
+              <div id="cockpitDept" class="chart w-full h-72"></div>
+            </div>
+          </div>
+
+          <div class="grid lg:grid-cols-3 gap-5 mt-5">
+            <div class="lg:col-span-2 panel p-5">
+              <h4 class="text-sm font-medium text-slate-200 mb-3">Top 5 Mandanten · YTD</h4>
+              <table class="w-full text-sm">
+                <thead class="text-[10px] uppercase tracking-wider text-slate-500">
+                  <tr><th class="text-left py-1.5">Mandant</th><th class="text-left py-1.5">Branche</th><th class="text-right py-1.5">Umsatz</th><th class="text-right py-1.5">Marge</th><th class="text-right py-1.5">Trend</th></tr>
+                </thead>
+                <tbody class="divide-y divide-white/5">
+                  <tr><td class="py-2 text-slate-200">Helios Pharma AG</td><td class="py-2 text-slate-400">Pharma &amp; Biotech</td><td class="py-2 text-right font-mono">€ 612 k</td><td class="py-2 text-right text-gold-200">61 %</td><td class="py-2 text-right up">▲ +24 %</td></tr>
+                  <tr><td class="py-2 text-slate-200">Sumire Robotics K.K.</td><td class="py-2 text-slate-400">Maschinenbau</td><td class="py-2 text-right font-mono">€ 489 k</td><td class="py-2 text-right">54 %</td><td class="py-2 text-right up">▲ +12 %</td></tr>
+                  <tr><td class="py-2 text-slate-200">Meridian Semiconductors</td><td class="py-2 text-slate-400">Halbleiter</td><td class="py-2 text-right font-mono">€ 471 k</td><td class="py-2 text-right">49 %</td><td class="py-2 text-right up">▲ +18 %</td></tr>
+                  <tr><td class="py-2 text-slate-200">Fjordsen Energi AS</td><td class="py-2 text-slate-400">Chemie</td><td class="py-2 text-right font-mono">€ 408 k</td><td class="py-2 text-right">58 %</td><td class="py-2 text-right down">▼ −8 %</td></tr>
+                  <tr><td class="py-2 text-slate-200">NovExa Biosciences</td><td class="py-2 text-slate-400">Pharma &amp; Biotech</td><td class="py-2 text-right font-mono">€ 387 k</td><td class="py-2 text-right text-gold-200">63 %</td><td class="py-2 text-right up">▲ +31 %</td></tr>
+                </tbody>
+              </table>
+            </div>
+            <div class="panel p-5">
+              <div class="flex items-center justify-between mb-3">
+                <h4 class="text-sm font-medium text-slate-200">Auffällig · 30 Tage</h4>
+                <span class="text-[10px] text-slate-500">automatisch erkannt</span>
+              </div>
+              <ul class="space-y-3 text-sm">
+                <li class="flex gap-2.5">
+                  <span class="up mt-0.5">▲</span>
+                  <div><div class="text-slate-200">Hanwool Display Co. (KR)</div><div class="text-xs text-slate-400">Aufträge YoY +41 % — größtes Wachstum unter Top-50.</div></div>
+                </li>
+                <li class="flex gap-2.5">
+                  <span class="down mt-0.5">▼</span>
+                  <div><div class="text-slate-200">Kymera Software Ltd. (UK)</div><div class="text-xs text-slate-400">Aufträge YoY −18 %, OPOS &gt; 60 Tage gestiegen.</div></div>
+                </li>
+                <li class="flex gap-2.5">
+                  <span class="up mt-0.5">▲</span>
+                  <div><div class="text-slate-200">Litigation</div><div class="text-xs text-slate-400">Marge 61 % — höchste aller Abteilungen, Kapazität ausgereizt.</div></div>
+                </li>
+                <li class="flex gap-2.5">
+                  <span class="text-amber-300 mt-0.5">!</span>
+                  <div><div class="text-slate-200">Hofbauer (Associate)</div><div class="text-xs text-slate-400">96 % Auslastung im 4. Monat in Folge.</div></div>
+                </li>
+              </ul>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ============ 03 / ABTEILUNGS-ANALYSE ============ -->
+      <section id="s03">
+        <div class="mb-6">
+          <div class="text-[11px] tracking-[0.22em] uppercase text-gold-300/90 font-medium">03 / Abteilungen</div>
+          <h2 class="font-display text-2xl sm:text-3xl mt-1">Abteilungs-Analyse</h2>
+          <p class="text-sm text-slate-400 mt-2 max-w-2xl">
+            Umsatz, Personalkosten und geleistete Stunden für jede Abteilung. Klick auf eine Abteilung
+            filtert die übrigen Visualisierungen und blendet eine Detailspalte ein.
+          </p>
+        </div>
+
+        <div class="screen p-5 sm:p-7">
+          <div class="flex flex-wrap items-center justify-between gap-3 mb-5">
+            <div class="text-[11px] uppercase tracking-wider text-slate-500">Aktiver Filter</div>
+            <div class="flex items-center gap-2 text-sm">
+              <span id="abtFilterChip" class="inline-flex items-center gap-2 px-3 py-1 rounded-full text-gold-100 text-xs" style="background:rgba(201,169,97,0.12); border:1px solid rgba(201,169,97,0.35);">Alle Abteilungen</span>
+              <button id="abtFilterClear" class="text-slate-400 hover:text-gold-200 text-xs underline underline-offset-4">zurücksetzen</button>
+            </div>
+          </div>
+
+          <div class="grid grid-cols-2 md:grid-cols-4 gap-3 mb-5">
+            <div class="panel p-4"><div class="text-[11px] uppercase tracking-wider text-slate-400">Umsatz</div><div id="kpiAbtUmsatz"  class="font-display text-2xl mt-1 text-slate-50">€ 14,29 M</div></div>
+            <div class="panel p-4"><div class="text-[11px] uppercase tracking-wider text-slate-400">Personalkosten</div><div id="kpiAbtKosten" class="font-display text-2xl mt-1 text-slate-50">€ 6,17 M</div></div>
+            <div class="panel p-4"><div class="text-[11px] uppercase tracking-wider text-slate-400">Stunden</div><div id="kpiAbtStunden" class="font-display text-2xl mt-1 text-slate-50">82 640 h</div></div>
+            <div class="panel p-4"><div class="text-[11px] uppercase tracking-wider text-slate-400">Marge</div><div id="kpiAbtMarge"  class="font-display text-2xl mt-1 text-gold-200">56,8 %</div></div>
+          </div>
+
+          <div class="grid lg:grid-cols-3 gap-5">
+            <div class="lg:col-span-2 panel p-5">
+              <div class="flex items-center justify-between mb-3">
+                <h4 class="text-sm font-medium text-slate-200">Umsatz vs. Personalkosten</h4>
+                <div class="flex items-center gap-3 text-[11px] text-slate-400">
+                  <span class="inline-flex items-center gap-1"><span class="w-2 h-2 rounded-sm" style="background:#C9A961"></span>Umsatz</span>
+                  <span class="inline-flex items-center gap-1"><span class="w-2 h-2 rounded-sm" style="background:#2D5092"></span>Kosten</span>
                 </div>
               </div>
               <div id="abtBar" class="chart w-full h-80"></div>
             </div>
-            <div class="rounded-xl border border-white/5 bg-ink-900/70 p-5">
-              <h4 class="font-medium text-slate-200 mb-3">Stundenverteilung</h4>
+            <div class="panel p-5">
+              <h4 class="text-sm font-medium text-slate-200 mb-3">Stundenverteilung</h4>
               <div id="abtDonut" class="chart w-full h-80"></div>
             </div>
           </div>
 
           <div class="grid lg:grid-cols-3 gap-5 mt-5">
-            <div class="lg:col-span-2 rounded-xl border border-white/5 bg-ink-900/70 p-5">
-              <h4 class="font-medium text-slate-200 mb-3">Umsatzentwicklung 12 Monate</h4>
+            <div class="lg:col-span-2 panel p-5">
+              <h4 class="text-sm font-medium text-slate-200 mb-3">Umsatzentwicklung 12 Monate</h4>
               <div id="abtArea" class="chart w-full h-72"></div>
             </div>
-            <div class="rounded-xl border border-white/5 bg-ink-900/70 p-5">
-              <h4 class="font-medium text-slate-200 mb-3">Abteilungs-Highlights</h4>
-              <ul id="abtHighlights" class="space-y-3 text-sm">
-                <!-- populated by JS -->
-              </ul>
+            <div class="panel p-5">
+              <h4 class="text-sm font-medium text-slate-200 mb-3">Highlights</h4>
+              <ul id="abtHighlights" class="space-y-3 text-sm"></ul>
             </div>
           </div>
         </div>
+      </section>
 
-        <!-- =========== TAB: ANWÄLTE =========== -->
-        <div data-panel="anwaelte" class="p-5 sm:p-7 hidden">
-          <div class="flex flex-wrap items-end justify-between gap-4 mb-6">
-            <div>
-              <h3 class="font-display text-2xl">Wer arbeitet wirklich für wen?</h3>
-              <p class="text-sm text-slate-400 mt-1">Klicken Sie auf einen Partner, um die Junior-Auslastung zu isolieren.</p>
-            </div>
+      <!-- ============ 04 / ANWALTS-MATRIX ============ -->
+      <section id="s04">
+        <div class="mb-6">
+          <div class="text-[11px] tracking-[0.22em] uppercase text-gold-300/90 font-medium">04 / Anwälte</div>
+          <h2 class="font-display text-2xl sm:text-3xl mt-1">Anwalts-Matrix</h2>
+          <p class="text-sm text-slate-400 mt-2 max-w-2xl">
+            Zuarbeitsstunden zwischen Associates und Partnern als Sankey-Diagramm. Klick auf einen
+            Partner isoliert dessen Junior-Auslastung. Daneben Top-Biller des laufenden Quartals und
+            Auslastung gegen Realization.
+          </p>
+        </div>
+
+        <div class="screen p-5 sm:p-7">
+          <div class="flex flex-wrap items-center justify-between gap-3 mb-5">
+            <div class="text-[11px] uppercase tracking-wider text-slate-500">Fokus</div>
             <div class="flex items-center gap-2 text-sm">
-              <span class="text-slate-500">Fokus:</span>
-              <span id="partnerFilterChip" class="filter-chip">Alle Partner</span>
+              <span id="partnerFilterChip" class="inline-flex items-center gap-2 px-3 py-1 rounded-full text-gold-100 text-xs" style="background:rgba(201,169,97,0.12); border:1px solid rgba(201,169,97,0.35);">Alle Partner</span>
               <button id="partnerFilterClear" class="text-slate-400 hover:text-gold-200 text-xs underline underline-offset-4">zurücksetzen</button>
             </div>
           </div>
 
-          <div class="grid grid-cols-2 md:grid-cols-4 gap-3 mb-6">
-            <div class="kpi rounded-xl border border-white/5 bg-ink-900/70 p-4">
-              <div class="text-[11px] uppercase tracking-wider text-slate-400">Aktive Berufsträger</div>
-              <div class="font-display text-2xl mt-1 text-slate-50">31</div>
-              <div class="text-xs text-slate-400 mt-1">12 Partner · 19 Associates</div>
-            </div>
-            <div class="kpi rounded-xl border border-white/5 bg-ink-900/70 p-4">
-              <div class="text-[11px] uppercase tracking-wider text-slate-400">Ø Billable Hours / Monat</div>
-              <div class="font-display text-2xl mt-1 text-slate-50">142 h</div>
-              <div class="text-xs text-emerald-300 mt-1">+6,1 % YoY</div>
-            </div>
-            <div class="kpi rounded-xl border border-white/5 bg-ink-900/70 p-4">
-              <div class="text-[11px] uppercase tracking-wider text-slate-400">Ø Realization</div>
-              <div class="font-display text-2xl mt-1 text-slate-50">87,3 %</div>
-              <div class="text-xs text-slate-400 mt-1">Quartal vs. Vorquartal +1,2 pp</div>
-            </div>
-            <div class="kpi rounded-xl border border-white/5 bg-ink-900/70 p-4">
-              <div class="text-[11px] uppercase tracking-wider text-slate-400">Höchster Beitrag (Partner)</div>
-              <div class="font-display text-2xl mt-1 text-gold-200">€ 1,84 M</div>
-              <div class="text-xs text-slate-400 mt-1">Dr. Brenner</div>
-            </div>
+          <div class="grid grid-cols-2 md:grid-cols-4 gap-3 mb-5">
+            <div class="panel p-4"><div class="text-[11px] uppercase tracking-wider text-slate-400">Berufsträger</div><div class="font-display text-2xl mt-1 text-slate-50">31</div><div class="text-xs text-slate-400 mt-1">12 Partner · 19 Associates</div></div>
+            <div class="panel p-4"><div class="text-[11px] uppercase tracking-wider text-slate-400">Ø Billable / Monat</div><div class="font-display text-2xl mt-1 text-slate-50">142 h</div><div class="text-xs text-emerald-300 mt-1">+6,1 % YoY</div></div>
+            <div class="panel p-4"><div class="text-[11px] uppercase tracking-wider text-slate-400">Ø Realization</div><div class="font-display text-2xl mt-1 text-slate-50">87,3 %</div><div class="text-xs text-slate-400 mt-1">+1,2 pp QoQ</div></div>
+            <div class="panel p-4"><div class="text-[11px] uppercase tracking-wider text-slate-400">Top Partner-Beitrag</div><div class="font-display text-2xl mt-1 text-gold-200">€ 1,84 M</div><div class="text-xs text-slate-400 mt-1">Dr. Brenner</div></div>
           </div>
 
           <div class="grid lg:grid-cols-3 gap-5">
-            <div class="lg:col-span-2 rounded-xl border border-white/5 bg-ink-900/70 p-5">
-              <h4 class="font-medium text-slate-200 mb-3">Stunden-Fluss: Associates → Partner</h4>
+            <div class="lg:col-span-2 panel p-5">
+              <h4 class="text-sm font-medium text-slate-200 mb-3">Stunden-Fluss · Associates → Partner</h4>
               <div id="anwSankey" class="chart w-full h-[420px]"></div>
             </div>
-            <div class="rounded-xl border border-white/5 bg-ink-900/70 p-5">
-              <h4 class="font-medium text-slate-200 mb-3">Top Biller (rollendes Quartal)</h4>
+            <div class="panel p-5">
+              <h4 class="text-sm font-medium text-slate-200 mb-3">Top Biller · rollendes Quartal</h4>
               <div id="anwBar" class="chart w-full h-[420px]"></div>
             </div>
           </div>
 
           <div class="grid lg:grid-cols-3 gap-5 mt-5">
-            <div class="lg:col-span-2 rounded-xl border border-white/5 bg-ink-900/70 p-5">
-              <h4 class="font-medium text-slate-200 mb-3">Realization Rate vs. Auslastung</h4>
+            <div class="lg:col-span-2 panel p-5">
+              <h4 class="text-sm font-medium text-slate-200 mb-3">Auslastung vs. Realization</h4>
               <div id="anwScatter" class="chart w-full h-80"></div>
-              <div class="mt-3 text-xs text-slate-400">
-                Höhere Auslastung → höhere Realization. Ausreißer rechts unten deuten auf überlastete, aber unterabrechnete Profile hin.
-              </div>
             </div>
-            <div class="rounded-xl border border-white/5 bg-ink-900/70 p-5">
-              <h4 class="font-medium text-slate-200 mb-3">Hinweise</h4>
+            <div class="panel p-5">
+              <h4 class="text-sm font-medium text-slate-200 mb-3">Hinweise</h4>
               <ul id="anwHighlights" class="space-y-3 text-sm"></ul>
             </div>
           </div>
         </div>
+      </section>
 
-        <!-- =========== TAB: MANDANTEN =========== -->
-        <div data-panel="mandanten" class="p-5 sm:p-7 hidden">
-          <div class="flex flex-wrap items-end justify-between gap-4 mb-6">
+      <!-- ============ 05 / ANWALTS-PROFIL ============ -->
+      <section id="s05">
+        <div class="mb-6">
+          <div class="text-[11px] tracking-[0.22em] uppercase text-gold-300/90 font-medium">05 / Profil</div>
+          <h2 class="font-display text-2xl sm:text-3xl mt-1">Anwalts-Profil</h2>
+          <p class="text-sm text-slate-400 mt-2 max-w-2xl">
+            Detailansicht eines einzelnen Berufsträgers: Stunden gegen Realization, Aufteilung der
+            Zeit auf Mandanten und Partner, offene Akten.
+          </p>
+        </div>
+
+        <div class="screen p-5 sm:p-7">
+          <!-- Header -->
+          <div class="flex flex-wrap items-center gap-5 pb-5 border-b border-white/5">
+            <div class="w-16 h-16 rounded-full grid place-items-center text-xl font-display bg-gradient-to-br from-gold-300 to-gold-500 text-ink-950">HF</div>
             <div>
-              <h3 class="font-display text-2xl">Welche Mandanten tragen Ihre Kanzlei?</h3>
-              <p class="text-sm text-slate-400 mt-1">Sortieren Sie die Tabelle nach Profitabilität, Trend oder Neuauftragsdynamik.</p>
+              <div class="font-display text-2xl">Lukas Hofbauer</div>
+              <div class="text-sm text-slate-400 mt-0.5">Associate · Patente · seit 2022 · primär Dr. Brenner</div>
             </div>
+            <div class="ml-auto flex items-center gap-2">
+              <button class="px-3 py-1.5 rounded-md border border-white/10 text-xs text-slate-300 hover:border-gold-400/40">Vorherigen anzeigen</button>
+              <button class="px-3 py-1.5 rounded-md border border-white/10 text-xs text-slate-300 hover:border-gold-400/40">Nächsten anzeigen</button>
+            </div>
+          </div>
+
+          <div class="grid grid-cols-2 md:grid-cols-4 gap-3 mt-5">
+            <div class="panel p-4"><div class="text-[11px] uppercase tracking-wider text-slate-400">Stunden YTD</div><div class="font-display text-2xl mt-1 text-slate-50">982 h</div><div class="text-xs text-slate-400 mt-1">813 h billable</div></div>
+            <div class="panel p-4"><div class="text-[11px] uppercase tracking-wider text-slate-400">Auslastung</div><div class="font-display text-2xl mt-1 text-amber-300">96 %</div><div class="text-xs text-slate-400 mt-1">über Zielband (78–88 %)</div></div>
+            <div class="panel p-4"><div class="text-[11px] uppercase tracking-wider text-slate-400">Realization</div><div class="font-display text-2xl mt-1 text-slate-50">84 %</div><div class="text-xs text-slate-400 mt-1">Vorquartal 82 %</div></div>
+            <div class="panel p-4"><div class="text-[11px] uppercase tracking-wider text-slate-400">Beitrag YTD</div><div class="font-display text-2xl mt-1 text-gold-200">€ 286 k</div><div class="text-xs text-slate-400 mt-1">€ 350/h Ø</div></div>
+          </div>
+
+          <div class="grid lg:grid-cols-3 gap-5 mt-5">
+            <div class="lg:col-span-2 panel p-5">
+              <h4 class="text-sm font-medium text-slate-200 mb-3">Stunden pro Monat · billable vs. nicht-billable</h4>
+              <div id="profHours" class="chart w-full h-72"></div>
+            </div>
+            <div class="panel p-5">
+              <h4 class="text-sm font-medium text-slate-200 mb-3">Zeitanteil · Top Mandanten</h4>
+              <div id="profClients" class="chart w-full h-72"></div>
+            </div>
+          </div>
+
+          <div class="grid lg:grid-cols-3 gap-5 mt-5">
+            <div class="lg:col-span-2 panel p-5">
+              <div class="flex items-center justify-between mb-3">
+                <h4 class="text-sm font-medium text-slate-200">Offene Akten</h4>
+                <span class="text-[11px] text-slate-500">14 aktiv</span>
+              </div>
+              <table class="w-full text-sm">
+                <thead class="text-[10px] uppercase tracking-wider text-slate-500">
+                  <tr><th class="text-left py-1.5">Aktenzeichen</th><th class="text-left py-1.5">Mandant</th><th class="text-left py-1.5">Verantw. Partner</th><th class="text-right py-1.5">Std. YTD</th><th class="text-right py-1.5">Status</th></tr>
+                </thead>
+                <tbody class="divide-y divide-white/5">
+                  <tr><td class="py-2 font-mono text-slate-200">P-2024-0118</td><td class="py-2 text-slate-300">Helios Pharma AG</td><td class="py-2 text-slate-300">Dr. Brenner</td><td class="py-2 text-right font-mono">142</td><td class="py-2 text-right"><span class="text-emerald-300">in Arbeit</span></td></tr>
+                  <tr><td class="py-2 font-mono text-slate-200">P-2024-0331</td><td class="py-2 text-slate-300">Sumire Robotics</td><td class="py-2 text-slate-300">Voss</td><td class="py-2 text-right font-mono">98</td><td class="py-2 text-right"><span class="text-amber-300">EPA-Frist 14 Tage</span></td></tr>
+                  <tr><td class="py-2 font-mono text-slate-200">P-2025-0044</td><td class="py-2 text-slate-300">NovExa Biosciences</td><td class="py-2 text-slate-300">Dr. Brenner</td><td class="py-2 text-right font-mono">87</td><td class="py-2 text-right"><span class="text-emerald-300">in Arbeit</span></td></tr>
+                  <tr><td class="py-2 font-mono text-slate-200">P-2025-0118</td><td class="py-2 text-slate-300">Meridian Semiconductors</td><td class="py-2 text-slate-300">Dr. Haupt</td><td class="py-2 text-right font-mono">71</td><td class="py-2 text-right"><span class="text-emerald-300">in Arbeit</span></td></tr>
+                  <tr><td class="py-2 font-mono text-slate-200">P-2025-0203</td><td class="py-2 text-slate-300">Hanwool Display</td><td class="py-2 text-slate-300">Dr. Brenner</td><td class="py-2 text-right font-mono">54</td><td class="py-2 text-right"><span class="text-amber-300">Recherche</span></td></tr>
+                  <tr><td class="py-2 font-mono text-slate-200">P-2025-0288</td><td class="py-2 text-slate-300">Aurelius Chemie</td><td class="py-2 text-slate-300">Köhler</td><td class="py-2 text-right font-mono">38</td><td class="py-2 text-right"><span class="text-slate-400">wartet auf Mandant</span></td></tr>
+                </tbody>
+              </table>
+            </div>
+            <div class="panel p-5">
+              <h4 class="text-sm font-medium text-slate-200 mb-3">Stundenfluss zu Partnern</h4>
+              <ul class="space-y-2 text-sm">
+                <li class="flex items-center justify-between"><span class="text-slate-200">Dr. Brenner</span><span class="font-mono text-gold-200">340 h</span></li>
+                <li class="flex items-center justify-between"><span class="text-slate-300">Voss</span><span class="font-mono text-slate-200">120 h</span></li>
+                <li class="flex items-center justify-between"><span class="text-slate-300">Dr. Haupt</span><span class="font-mono text-slate-200">96 h</span></li>
+                <li class="flex items-center justify-between"><span class="text-slate-300">Köhler</span><span class="font-mono text-slate-200">62 h</span></li>
+                <li class="flex items-center justify-between"><span class="text-slate-300">Mertens</span><span class="font-mono text-slate-200">28 h</span></li>
+              </ul>
+              <div class="mt-5 panel p-3">
+                <div class="text-[11px] uppercase tracking-wider text-amber-200/90 mb-1">Hinweise</div>
+                <ul class="text-xs text-slate-300 space-y-1.5">
+                  <li>· Auslastung 4. Monat &gt; 90 % — Backup empfohlen.</li>
+                  <li>· 78 % der Stunden gehen an einen einzelnen Partner.</li>
+                </ul>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ============ 06 / MANDANTEN-LISTE ============ -->
+      <section id="s06">
+        <div class="mb-6">
+          <div class="text-[11px] tracking-[0.22em] uppercase text-gold-300/90 font-medium">06 / Mandanten</div>
+          <h2 class="font-display text-2xl sm:text-3xl mt-1">Mandanten-Liste</h2>
+          <p class="text-sm text-slate-400 mt-2 max-w-2xl">
+            Sortier- und filterbare Tabelle aller Mandanten mit Profitabilität, Trend der Neuaufträge
+            und 12-Monats-Verlauf als Sparkline. Spaltenkopf zum Sortieren klicken.
+          </p>
+        </div>
+
+        <div class="screen p-5 sm:p-7">
+          <div class="flex flex-wrap items-center justify-between gap-3 mb-4">
             <div class="flex items-center gap-2">
               <input id="clientSearch" type="search" placeholder="Mandant suchen…" class="bg-ink-800 border border-white/10 text-sm text-slate-200 rounded-lg px-3 py-1.5 w-56 focus:outline-none focus:border-gold-400/50"/>
               <select id="clientIndustry" class="bg-ink-800 border border-white/10 text-sm text-slate-200 rounded-lg px-3 py-1.5 focus:outline-none focus:border-gold-400/50">
                 <option value="">Alle Branchen</option>
-                <option>Pharma & Biotech</option>
+                <option>Pharma &amp; Biotech</option>
                 <option>Maschinenbau</option>
                 <option>Halbleiter</option>
                 <option>Automotive</option>
@@ -614,459 +714,431 @@
                 <option>Konsumgüter</option>
                 <option>Chemie</option>
               </select>
+              <select id="clientCountry" class="bg-ink-800 border border-white/10 text-sm text-slate-200 rounded-lg px-3 py-1.5 focus:outline-none focus:border-gold-400/50">
+                <option value="">Alle Länder</option>
+                <option>Deutschland</option><option>USA</option><option>Schweiz</option><option>Japan</option>
+                <option>Südkorea</option><option>UK</option><option>Frankreich</option><option>Niederlande</option>
+                <option>Schweden</option><option>Italien</option>
+              </select>
             </div>
+            <div id="clientsRowsInfo" class="text-xs text-slate-400">— Mandanten</div>
           </div>
 
-          <div class="grid grid-cols-2 md:grid-cols-4 gap-3 mb-6">
-            <div class="kpi rounded-xl border border-white/5 bg-ink-900/70 p-4">
-              <div class="text-[11px] uppercase tracking-wider text-slate-400">Aktive Mandanten</div>
-              <div class="font-display text-2xl mt-1 text-slate-50">412</div>
-              <div class="text-xs text-slate-400 mt-1">Top 20 = 64 % Umsatz</div>
-            </div>
-            <div class="kpi rounded-xl border border-white/5 bg-ink-900/70 p-4">
-              <div class="text-[11px] uppercase tracking-wider text-slate-400">Neu in 90 Tagen</div>
-              <div class="font-display text-2xl mt-1 text-emerald-300">+18</div>
-              <div class="text-xs text-slate-400 mt-1">davon 4 strategisch</div>
-            </div>
-            <div class="kpi rounded-xl border border-white/5 bg-ink-900/70 p-4">
-              <div class="text-[11px] uppercase tracking-wider text-slate-400">Schrumpfende Mandate</div>
-              <div class="font-display text-2xl mt-1 text-rose-300">9</div>
-              <div class="text-xs text-slate-400 mt-1">Aufträge YoY −20 %</div>
-            </div>
-            <div class="kpi rounded-xl border border-white/5 bg-ink-900/70 p-4">
-              <div class="text-[11px] uppercase tracking-wider text-slate-400">Größter Einzelmandant</div>
-              <div class="font-display text-2xl mt-1 text-gold-200">€ 612 k</div>
-              <div class="text-xs text-slate-400 mt-1">Helios Pharma AG</div>
-            </div>
-          </div>
-
-          <div class="grid lg:grid-cols-3 gap-5">
-            <div class="lg:col-span-2 rounded-xl border border-white/5 bg-ink-900/70 overflow-hidden">
-              <div class="overflow-x-auto">
-                <table class="min-w-full text-sm">
-                  <thead class="bg-ink-800/70 text-slate-300">
-                    <tr>
-                      <th class="text-left px-4 py-3 sortable" data-key="name">Mandant <span class="sort-arrow">↕</span></th>
-                      <th class="text-left px-4 py-3 sortable" data-key="industry">Branche <span class="sort-arrow">↕</span></th>
-                      <th class="text-right px-4 py-3 sortable sorted-desc" data-key="revenue">Umsatz YTD <span class="sort-arrow">↓</span></th>
-                      <th class="text-right px-4 py-3 sortable" data-key="margin">Marge <span class="sort-arrow">↕</span></th>
-                      <th class="text-right px-4 py-3 sortable" data-key="newOrders">Neuaufträge YoY <span class="sort-arrow">↕</span></th>
-                      <th class="text-left px-4 py-3">12-Mt-Trend</th>
-                    </tr>
-                  </thead>
-                  <tbody id="clientsTbody" class="divide-y divide-white/5"></tbody>
-                </table>
-              </div>
-              <div class="px-4 py-2.5 text-xs text-slate-500 border-t border-white/5 flex items-center justify-between">
-                <span id="clientsRowsInfo">— Mandanten angezeigt</span>
-                <span>Auswahl klicken → Detail rechts</span>
-              </div>
-            </div>
-
-            <div class="rounded-xl border border-white/5 bg-ink-900/70 p-5">
-              <div class="text-[11px] uppercase tracking-wider text-slate-400">Mandantendetail</div>
-              <div id="clientName" class="font-display text-xl mt-1 text-slate-50">— Mandant wählen —</div>
-              <div id="clientMeta" class="text-xs text-slate-400 mt-1">&nbsp;</div>
-              <div class="grid grid-cols-2 gap-2 mt-4">
-                <div class="rounded-lg bg-ink-800/70 border border-white/5 px-3 py-2.5">
-                  <div class="text-[10px] uppercase text-slate-400">Umsatz YTD</div>
-                  <div id="clientRevenue" class="text-slate-100 font-semibold">—</div>
-                </div>
-                <div class="rounded-lg bg-ink-800/70 border border-white/5 px-3 py-2.5">
-                  <div class="text-[10px] uppercase text-slate-400">Marge</div>
-                  <div id="clientMargin" class="text-slate-100 font-semibold">—</div>
-                </div>
-                <div class="rounded-lg bg-ink-800/70 border border-white/5 px-3 py-2.5">
-                  <div class="text-[10px] uppercase text-slate-400">Aufträge YTD</div>
-                  <div id="clientOrders" class="text-slate-100 font-semibold">—</div>
-                </div>
-                <div class="rounded-lg bg-ink-800/70 border border-white/5 px-3 py-2.5">
-                  <div class="text-[10px] uppercase text-slate-400">Ø Stundenrate</div>
-                  <div id="clientRate" class="text-slate-100 font-semibold">—</div>
-                </div>
-              </div>
-              <h4 class="mt-5 mb-2 text-sm text-slate-300 font-medium">Umsatz 12 Monate</h4>
-              <div id="clientLine" class="chart w-full h-44"></div>
-              <h4 class="mt-4 mb-2 text-sm text-slate-300 font-medium">Soll / Haben</h4>
-              <div id="clientSollHaben" class="chart w-full h-40"></div>
+          <div class="panel overflow-hidden">
+            <div class="overflow-x-auto">
+              <table class="min-w-full text-sm">
+                <thead class="bg-ink-800/70 text-slate-300 text-xs uppercase tracking-wider">
+                  <tr>
+                    <th class="text-left px-4 py-3 sortable" data-key="name">Mandant <span class="sort-arrow">↕</span></th>
+                    <th class="text-left px-4 py-3 sortable" data-key="industry">Branche <span class="sort-arrow">↕</span></th>
+                    <th class="text-left px-4 py-3 sortable" data-key="country">Land <span class="sort-arrow">↕</span></th>
+                    <th class="text-left px-4 py-3 sortable" data-key="partner">Partner <span class="sort-arrow">↕</span></th>
+                    <th class="text-right px-4 py-3 sortable sorted-desc" data-key="revenue">Umsatz YTD <span class="sort-arrow">↓</span></th>
+                    <th class="text-right px-4 py-3 sortable" data-key="margin">Marge <span class="sort-arrow">↕</span></th>
+                    <th class="text-right px-4 py-3 sortable" data-key="newOrders">Neuauftr. YoY <span class="sort-arrow">↕</span></th>
+                    <th class="text-left px-4 py-3">12-Mt</th>
+                  </tr>
+                </thead>
+                <tbody id="clientsTbody" class="divide-y divide-white/5"></tbody>
+              </table>
             </div>
           </div>
         </div>
+      </section>
 
-        <!-- =========== TAB: WELT =========== -->
-        <div data-panel="welt" class="p-5 sm:p-7 hidden">
-          <div class="flex flex-wrap items-end justify-between gap-4 mb-6">
+      <!-- ============ 07 / MANDANTEN-DETAIL ============ -->
+      <section id="s07">
+        <div class="mb-6">
+          <div class="text-[11px] tracking-[0.22em] uppercase text-gold-300/90 font-medium">07 / Detail</div>
+          <h2 class="font-display text-2xl sm:text-3xl mt-1">Mandanten-Detail</h2>
+          <p class="text-sm text-slate-400 mt-2 max-w-2xl">
+            Eine Mandantenseite mit Umsatzverlauf, Soll-/Haben-Salden, OPOS-Aging, beteiligtem Team
+            und offenen Akten. Mandanten oben über die Suche wechseln.
+          </p>
+        </div>
+
+        <div class="screen p-5 sm:p-7">
+          <!-- Mandant header -->
+          <div class="flex flex-wrap items-start gap-5 pb-5 border-b border-white/5">
+            <div class="w-14 h-14 rounded-md grid place-items-center font-display text-lg bg-ink-800 border border-gold-400/30 text-gold-200">HE</div>
             <div>
-              <h3 class="font-display text-2xl">Wo sitzen die Mandanten der Zukunft?</h3>
-              <p class="text-sm text-slate-400 mt-1">Größere Punkte = höherer Umsatz. Farbintensität = Wachstum YoY.</p>
+              <div class="font-display text-2xl">Helios Pharma AG</div>
+              <div class="text-sm text-slate-400 mt-0.5">Pharma &amp; Biotech · Deutschland · Mandant seit 2014 · Partner: Dr. Brenner</div>
             </div>
-            <div class="flex items-center gap-2 text-sm">
-              <span class="text-slate-500">Fokus:</span>
-              <span id="worldFilterChip" class="filter-chip">Welt</span>
+            <div class="ml-auto flex items-center gap-2">
+              <input type="search" placeholder="Anderen Mandanten…" class="bg-ink-800 border border-white/10 text-xs text-slate-200 rounded-md px-2.5 py-1.5 w-44 focus:outline-none focus:border-gold-400/50"/>
+              <button class="px-3 py-1.5 rounded-md border border-white/10 text-xs text-slate-300 hover:border-gold-400/40">PDF-Profil</button>
             </div>
           </div>
 
-          <div class="grid grid-cols-2 md:grid-cols-4 gap-3 mb-6">
-            <div class="kpi rounded-xl border border-white/5 bg-ink-900/70 p-4">
-              <div class="text-[11px] uppercase tracking-wider text-slate-400">Länder mit Mandaten</div>
-              <div class="font-display text-2xl mt-1 text-slate-50">38</div>
-              <div class="text-xs text-slate-400 mt-1">+4 neu (12 Mt.)</div>
+          <div class="grid grid-cols-2 md:grid-cols-4 gap-3 mt-5">
+            <div class="panel p-4"><div class="text-[11px] uppercase tracking-wider text-slate-400">Umsatz YTD</div><div class="font-display text-2xl mt-1 text-slate-50">€ 612 k</div><div class="text-xs text-emerald-300 mt-1">+24 % YoY</div></div>
+            <div class="panel p-4"><div class="text-[11px] uppercase tracking-wider text-slate-400">Marge</div><div class="font-display text-2xl mt-1 text-gold-200">61 %</div><div class="text-xs text-slate-400 mt-1">Top-Quartil</div></div>
+            <div class="panel p-4"><div class="text-[11px] uppercase tracking-wider text-slate-400">Aufträge YTD</div><div class="font-display text-2xl mt-1 text-slate-50">84</div><div class="text-xs text-slate-400 mt-1">Vorjahr 68</div></div>
+            <div class="panel p-4"><div class="text-[11px] uppercase tracking-wider text-slate-400">Ø Stundenrate</div><div class="font-display text-2xl mt-1 text-slate-50">€ 410</div><div class="text-xs text-slate-400 mt-1">Branche Ø € 380</div></div>
+          </div>
+
+          <div class="grid lg:grid-cols-3 gap-5 mt-5">
+            <div class="lg:col-span-2 panel p-5">
+              <h4 class="text-sm font-medium text-slate-200 mb-3">Umsatzverlauf · 24 Monate</h4>
+              <div id="cltLine" class="chart w-full h-72"></div>
             </div>
-            <div class="kpi rounded-xl border border-white/5 bg-ink-900/70 p-4">
-              <div class="text-[11px] uppercase tracking-wider text-slate-400">Internationaler Anteil</div>
-              <div class="font-display text-2xl mt-1 text-slate-50">47,6 %</div>
-              <div class="text-xs text-emerald-300 mt-1">+3,1 pp YoY</div>
+            <div class="panel p-5">
+              <h4 class="text-sm font-medium text-slate-200 mb-3">Soll / Haben (YTD)</h4>
+              <div id="cltSH" class="chart w-full h-44"></div>
+              <h4 class="text-sm font-medium text-slate-200 mt-5 mb-3">OPOS-Aging</h4>
+              <div id="cltAging" class="chart w-full h-44"></div>
             </div>
-            <div class="kpi rounded-xl border border-white/5 bg-ink-900/70 p-4">
-              <div class="text-[11px] uppercase tracking-wider text-slate-400">Top Wachstumsmarkt</div>
-              <div class="font-display text-2xl mt-1 text-gold-200">Südkorea</div>
-              <div class="text-xs text-emerald-300 mt-1">+41 % Umsatz YoY</div>
+          </div>
+
+          <div class="grid lg:grid-cols-3 gap-5 mt-5">
+            <div class="lg:col-span-2 panel p-5">
+              <div class="flex items-center justify-between mb-3">
+                <h4 class="text-sm font-medium text-slate-200">Offene Akten</h4>
+                <span class="text-[11px] text-slate-500">12 aktiv · 4 in Frist</span>
+              </div>
+              <table class="w-full text-sm">
+                <thead class="text-[10px] uppercase tracking-wider text-slate-500">
+                  <tr><th class="text-left py-1.5">Aktenzeichen</th><th class="text-left py-1.5">Schutzrecht</th><th class="text-left py-1.5">Land</th><th class="text-left py-1.5">Verantw.</th><th class="text-right py-1.5">Std.</th><th class="text-right py-1.5">Frist</th></tr>
+                </thead>
+                <tbody class="divide-y divide-white/5">
+                  <tr><td class="py-2 font-mono text-slate-200">P-2024-0118</td><td class="py-2 text-slate-300">Patent</td><td class="py-2 text-slate-300">EP</td><td class="py-2 text-slate-300">Dr. Brenner / Hofbauer</td><td class="py-2 text-right font-mono">142</td><td class="py-2 text-right text-slate-400">—</td></tr>
+                  <tr><td class="py-2 font-mono text-slate-200">P-2024-0247</td><td class="py-2 text-slate-300">Patent</td><td class="py-2 text-slate-300">US</td><td class="py-2 text-slate-300">Voss / Albers</td><td class="py-2 text-right font-mono">88</td><td class="py-2 text-right text-amber-300">14 Tage</td></tr>
+                  <tr><td class="py-2 font-mono text-slate-200">P-2025-0044</td><td class="py-2 text-slate-300">Patent</td><td class="py-2 text-slate-300">EP/JP</td><td class="py-2 text-slate-300">Dr. Brenner / Hofbauer</td><td class="py-2 text-right font-mono">87</td><td class="py-2 text-right text-slate-400">—</td></tr>
+                  <tr><td class="py-2 font-mono text-slate-200">M-2025-0012</td><td class="py-2 text-slate-300">Marke</td><td class="py-2 text-slate-300">EU</td><td class="py-2 text-slate-300">Dr. Lange / Eckert</td><td class="py-2 text-right font-mono">22</td><td class="py-2 text-right text-amber-300">3 Tage</td></tr>
+                  <tr><td class="py-2 font-mono text-slate-200">L-2025-0007</td><td class="py-2 text-slate-300">Litigation</td><td class="py-2 text-slate-300">DE</td><td class="py-2 text-slate-300">Mertens / Dornstetter</td><td class="py-2 text-right font-mono">61</td><td class="py-2 text-right text-amber-300">21 Tage</td></tr>
+                  <tr><td class="py-2 font-mono text-slate-200">P-2025-0203</td><td class="py-2 text-slate-300">Patent</td><td class="py-2 text-slate-300">DE</td><td class="py-2 text-slate-300">Dr. Brenner / Hofbauer</td><td class="py-2 text-right font-mono">54</td><td class="py-2 text-right text-slate-400">—</td></tr>
+                </tbody>
+              </table>
             </div>
-            <div class="kpi rounded-xl border border-white/5 bg-ink-900/70 p-4">
-              <div class="text-[11px] uppercase tracking-wider text-slate-400">Rückläufiger Markt</div>
-              <div class="font-display text-2xl mt-1 text-rose-300">UK</div>
-              <div class="text-xs text-slate-400 mt-1">−12 % Aufträge YoY</div>
+            <div class="panel p-5">
+              <h4 class="text-sm font-medium text-slate-200 mb-3">Beteiligtes Team</h4>
+              <ul class="space-y-2 text-sm">
+                <li class="flex items-center gap-3">
+                  <span class="w-7 h-7 rounded-full grid place-items-center text-[10px] font-medium bg-gold-400/15 text-gold-200 border border-gold-400/30">BR</span>
+                  <div class="flex-1"><div class="text-slate-200">Dr. Brenner</div><div class="text-[11px] text-slate-500">Verantw. Partner · 142 h YTD</div></div>
+                </li>
+                <li class="flex items-center gap-3">
+                  <span class="w-7 h-7 rounded-full grid place-items-center text-[10px] font-medium bg-ink-800 text-slate-200 border border-white/10">VO</span>
+                  <div class="flex-1"><div class="text-slate-200">Voss</div><div class="text-[11px] text-slate-500">Co-Partner · 36 h YTD</div></div>
+                </li>
+                <li class="flex items-center gap-3">
+                  <span class="w-7 h-7 rounded-full grid place-items-center text-[10px] font-medium bg-ink-800 text-slate-200 border border-white/10">HF</span>
+                  <div class="flex-1"><div class="text-slate-200">Hofbauer</div><div class="text-[11px] text-slate-500">Associate · 287 h YTD</div></div>
+                </li>
+                <li class="flex items-center gap-3">
+                  <span class="w-7 h-7 rounded-full grid place-items-center text-[10px] font-medium bg-ink-800 text-slate-200 border border-white/10">AL</span>
+                  <div class="flex-1"><div class="text-slate-200">Albers</div><div class="text-[11px] text-slate-500">Associate · 118 h YTD</div></div>
+                </li>
+                <li class="flex items-center gap-3">
+                  <span class="w-7 h-7 rounded-full grid place-items-center text-[10px] font-medium bg-ink-800 text-slate-200 border border-white/10">EC</span>
+                  <div class="flex-1"><div class="text-slate-200">Eckert</div><div class="text-[11px] text-slate-500">Associate · 22 h YTD</div></div>
+                </li>
+              </ul>
+
+              <div class="mt-5 panel p-3">
+                <div class="text-[11px] uppercase tracking-wider text-emerald-300/90 mb-1">Trend</div>
+                <ul class="text-xs text-slate-300 space-y-1.5">
+                  <li>· Aufträge 12-Mt: +24 %, Litigation-Volumen wächst.</li>
+                  <li>· Konzentration: 70 % der Stunden auf 2 Personen — Risiko.</li>
+                  <li>· Zahlungsverhalten: pünktlich, OPOS &lt; 30 Tage.</li>
+                </ul>
+              </div>
             </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ============ 08 / GEOGRAFISCHE VERTEILUNG ============ -->
+      <section id="s08">
+        <div class="mb-6">
+          <div class="text-[11px] tracking-[0.22em] uppercase text-gold-300/90 font-medium">08 / Geografie</div>
+          <h2 class="font-display text-2xl sm:text-3xl mt-1">Geografische Verteilung</h2>
+          <p class="text-sm text-slate-400 mt-2 max-w-2xl">
+            Mandantensitz auf Weltkarte. Punktgröße = Umsatz, Farbintensität = YoY-Wachstum.
+            Land klicken für Detail-Filter, Länder-Ranking rechts.
+          </p>
+        </div>
+
+        <div class="screen p-5 sm:p-7">
+          <div class="grid grid-cols-2 md:grid-cols-4 gap-3 mb-5">
+            <div class="panel p-4"><div class="text-[11px] uppercase tracking-wider text-slate-400">Länder</div><div class="font-display text-2xl mt-1 text-slate-50">38</div><div class="text-xs text-slate-400 mt-1">+4 in 12 Mt.</div></div>
+            <div class="panel p-4"><div class="text-[11px] uppercase tracking-wider text-slate-400">Internationaler Anteil</div><div class="font-display text-2xl mt-1 text-slate-50">47,6 %</div><div class="text-xs text-emerald-300 mt-1">+3,1 pp YoY</div></div>
+            <div class="panel p-4"><div class="text-[11px] uppercase tracking-wider text-slate-400">Top-Wachstumsmarkt</div><div class="font-display text-2xl mt-1 text-gold-200">Südkorea</div><div class="text-xs text-emerald-300 mt-1">+41 % YoY</div></div>
+            <div class="panel p-4"><div class="text-[11px] uppercase tracking-wider text-slate-400">Rückläufig</div><div class="font-display text-2xl mt-1 text-rose-300">UK</div><div class="text-xs text-slate-400 mt-1">−12 % Aufträge</div></div>
           </div>
 
           <div class="grid lg:grid-cols-3 gap-5">
-            <div class="lg:col-span-2 rounded-xl border border-white/5 bg-ink-900/70 p-5">
+            <div class="lg:col-span-2 panel p-5">
+              <div class="flex items-center justify-between mb-3">
+                <h4 class="text-sm font-medium text-slate-200">Mandantensitz · Umsatz &amp; Wachstum</h4>
+                <span id="worldFilterChip" class="text-[11px] px-2.5 py-0.5 rounded-full text-gold-100" style="background:rgba(201,169,97,0.12); border:1px solid rgba(201,169,97,0.35);">Welt</span>
+              </div>
               <div id="worldMap" class="chart w-full h-[480px]"></div>
               <div id="worldMapFallback" class="hidden text-sm text-slate-400 mt-2">
-                Hinweis: Kartendaten konnten nicht geladen werden. <a class="underline text-gold-300" href="#" id="worldRetry">Erneut versuchen</a>.
+                Kartendaten konnten nicht geladen werden. <a class="underline text-gold-300" href="#" id="worldRetry">Erneut versuchen</a>.
               </div>
             </div>
-            <div class="rounded-xl border border-white/5 bg-ink-900/70 p-5">
-              <h4 class="font-medium text-slate-200 mb-3">Top-Märkte nach Umsatz</h4>
+            <div class="panel p-5">
+              <h4 class="text-sm font-medium text-slate-200 mb-3">Top-Märkte</h4>
               <div id="worldBar" class="chart w-full h-[480px]"></div>
             </div>
           </div>
         </div>
+      </section>
 
-      </div>
-
-      <p class="text-center text-xs text-slate-500 mt-6">
-        Daten in der Demo sind synthetisch und repräsentieren eine fiktive Patentanwaltskanzlei „Brenner &amp; Voss Partner mbB&quot;.
-      </p>
-    </div>
-  </section>
-
-  <!-- ============ FEATURES ============ -->
-  <section id="features" class="relative">
-    <div class="max-w-7xl mx-auto px-6 lg:px-10 py-24 lg:py-28">
-      <div class="max-w-3xl">
-        <div class="text-[11px] tracking-[0.22em] uppercase text-gold-300/90 font-medium mb-5">Funktionen</div>
-        <h2 class="font-display text-3xl sm:text-4xl lg:text-5xl tracking-tight leading-[1.1]">
-          Alles, was Ihr <span class="text-gold-gradient italic">Managing Partner</span> wissen muss.
-          <br/>An einem Ort.
-        </h2>
-      </div>
-
-      <div class="mt-14 grid md:grid-cols-2 lg:grid-cols-3 gap-5">
-        <div class="rounded-2xl border border-white/5 bg-ink-900/60 p-7 hover:border-gold-400/30 transition">
-          <div class="grid place-items-center w-11 h-11 rounded-xl bg-gold-400/10 border border-gold-400/30 text-gold-200">
-            <svg viewBox="0 0 24 24" class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3h7v7H3z"/><path d="M14 3h7v7h-7z"/><path d="M14 14h7v7h-7z"/><path d="M3 14h7v7H3z"/></svg>
-          </div>
-          <h3 class="font-display text-xl mt-5">Abteilungs-Cockpit</h3>
-          <p class="text-slate-400 mt-2 leading-relaxed">Kosten, Stunden und Umsatz für jede Abteilung — Patente, Marken, Designs, Litigation, Verwaltung. In einer Ansicht.</p>
-        </div>
-        <div class="rounded-2xl border border-white/5 bg-ink-900/60 p-7 hover:border-gold-400/30 transition">
-          <div class="grid place-items-center w-11 h-11 rounded-xl bg-gold-400/10 border border-gold-400/30 text-gold-200">
-            <svg viewBox="0 0 24 24" class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="7" r="4"/><path d="M3 21v-1a6 6 0 0 1 12 0v1"/><circle cx="17" cy="11" r="3"/><path d="M21 21v-1a4 4 0 0 0-6-3.5"/></svg>
-          </div>
-          <h3 class="font-display text-xl mt-5">Anwalts-Matrix</h3>
-          <p class="text-slate-400 mt-2 leading-relaxed">Welche Junior-Stunden fließen an welchen Partner? Wer ist überlastet, wer unterausgelastet, wer der heimliche Profit-Center?</p>
-        </div>
-        <div class="rounded-2xl border border-white/5 bg-ink-900/60 p-7 hover:border-gold-400/30 transition">
-          <div class="grid place-items-center w-11 h-11 rounded-xl bg-gold-400/10 border border-gold-400/30 text-gold-200">
-            <svg viewBox="0 0 24 24" class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3v18h18"/><path d="m7 15 4-4 3 3 6-7"/></svg>
-          </div>
-          <h3 class="font-display text-xl mt-5">Mandantenanalytik</h3>
-          <p class="text-slate-400 mt-2 leading-relaxed">Profitabilität, Trendrichtung, Anteil am Gesamtumsatz, Auftragsdynamik. Pro Mandant, pro Branche, pro Region.</p>
-        </div>
-        <div class="rounded-2xl border border-white/5 bg-ink-900/60 p-7 hover:border-gold-400/30 transition">
-          <div class="grid place-items-center w-11 h-11 rounded-xl bg-gold-400/10 border border-gold-400/30 text-gold-200">
-            <svg viewBox="0 0 24 24" class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M2 12h20"/><path d="M12 2a15 15 0 0 1 0 20"/><path d="M12 2a15 15 0 0 0 0 20"/></svg>
-          </div>
-          <h3 class="font-display text-xl mt-5">Geografische Übersicht</h3>
-          <p class="text-slate-400 mt-2 leading-relaxed">Welche Märkte tragen Ihr Wachstum? Wo verlieren Sie Boden? Eine Weltkarte sagt mehr als 200 Buchungssätze.</p>
-        </div>
-        <div class="rounded-2xl border border-white/5 bg-ink-900/60 p-7 hover:border-gold-400/30 transition">
-          <div class="grid place-items-center w-11 h-11 rounded-xl bg-gold-400/10 border border-gold-400/30 text-gold-200">
-            <svg viewBox="0 0 24 24" class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12h4l3-8 4 16 3-8h4"/></svg>
-          </div>
-          <h3 class="font-display text-xl mt-5">Soll / Haben Verstand</h3>
-          <p class="text-slate-400 mt-2 leading-relaxed">Wir lesen Ihren Datev-Export so, wie Sie ihn gemeint hätten: Konten werden semantisch zugeordnet — Mandant, Partner, Abteilung, Markt.</p>
-        </div>
-        <div class="rounded-2xl border border-white/5 bg-ink-900/60 p-7 hover:border-gold-400/30 transition">
-          <div class="grid place-items-center w-11 h-11 rounded-xl bg-gold-400/10 border border-gold-400/30 text-gold-200">
-            <svg viewBox="0 0 24 24" class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M8 12h8"/><path d="M12 8v8"/></svg>
-          </div>
-          <h3 class="font-display text-xl mt-5">Partner-Briefing in 3 Minuten</h3>
-          <p class="text-slate-400 mt-2 leading-relaxed">Ein PDF-Export für die nächste Gesellschafterversammlung. Mit den richtigen Fragen — und den richtigen Zahlen darunter.</p>
-        </div>
-      </div>
-    </div>
-  </section>
-
-  <!-- ============ WORKFLOW ============ -->
-  <section id="workflow" class="relative">
-    <div class="max-w-7xl mx-auto px-6 lg:px-10 py-24 lg:py-28">
-      <div class="grid lg:grid-cols-12 gap-12">
-        <div class="lg:col-span-5">
-          <div class="text-[11px] tracking-[0.22em] uppercase text-gold-300/90 font-medium mb-5">So funktioniert es</div>
-          <h2 class="font-display text-3xl sm:text-4xl lg:text-5xl tracking-tight leading-[1.1]">
-            In <span class="text-gold-gradient italic">drei Schritten</span> vom Datev-Export ins Cockpit.
-          </h2>
-          <p class="mt-6 text-slate-300/90 leading-relaxed">
-            Sie behalten Datev. Wir bauen darauf auf. Kein Eingriff, kein neuer Workflow für Ihre Buchhaltung —
-            wir nehmen, was Sie ohnehin exportieren.
+      <!-- ============ 09 / NEUAUFTRÄGE & PIPELINE ============ -->
+      <section id="s09">
+        <div class="mb-6">
+          <div class="text-[11px] tracking-[0.22em] uppercase text-gold-300/90 font-medium">09 / Pipeline</div>
+          <h2 class="font-display text-2xl sm:text-3xl mt-1">Neuaufträge &amp; Pipeline</h2>
+          <p class="text-sm text-slate-400 mt-2 max-w-2xl">
+            Neue Mandate pro Monat, Quelle der Anfragen, und der aktuelle Funnel von Erstkontakt bis
+            Mandatierung. Erwartetes Volumen unten rechts.
           </p>
+        </div>
 
-          <div class="mt-8 space-y-5">
-            <div class="flex gap-4">
-              <div class="font-display text-3xl text-gold-300 w-10 shrink-0">01</div>
-              <div>
-                <h4 class="font-medium text-slate-100">Datev-Export hochladen</h4>
-                <p class="text-sm text-slate-400 mt-1">Buchungssätze, Lohnjournal, OPOS-Liste, Rechnungseingang/-ausgang. CSV oder Datev XML.</p>
+        <div class="screen p-5 sm:p-7">
+          <div class="grid grid-cols-2 md:grid-cols-4 gap-3 mb-5">
+            <div class="panel p-4"><div class="text-[11px] uppercase tracking-wider text-slate-400">Pipeline · offen</div><div class="font-display text-2xl mt-1 text-slate-50">€ 2,18 M</div><div class="text-xs text-emerald-300 mt-1">+9 % MoM</div></div>
+            <div class="panel p-4"><div class="text-[11px] uppercase tracking-wider text-slate-400">Win-Rate (3 Mt.)</div><div class="font-display text-2xl mt-1 text-slate-50">62 %</div><div class="text-xs text-slate-400 mt-1">Branche Ø 48 %</div></div>
+            <div class="panel p-4"><div class="text-[11px] uppercase tracking-wider text-slate-400">Ø Sales-Cycle</div><div class="font-display text-2xl mt-1 text-slate-50">23 Tage</div><div class="text-xs text-slate-400 mt-1">Erstkontakt → Mandat</div></div>
+            <div class="panel p-4"><div class="text-[11px] uppercase tracking-wider text-slate-400">Neu · 30 Tage</div><div class="font-display text-2xl mt-1 text-gold-200">7 Mandate</div><div class="text-xs text-slate-400 mt-1">davon 2 strategisch</div></div>
+          </div>
+
+          <div class="grid lg:grid-cols-3 gap-5">
+            <div class="lg:col-span-2 panel p-5">
+              <h4 class="text-sm font-medium text-slate-200 mb-3">Neue Mandate &amp; Aufträge · 12 Monate</h4>
+              <div id="pipeTrend" class="chart w-full h-72"></div>
+            </div>
+            <div class="panel p-5">
+              <h4 class="text-sm font-medium text-slate-200 mb-3">Quelle (12 Mt.)</h4>
+              <div id="pipeSource" class="chart w-full h-72"></div>
+            </div>
+          </div>
+
+          <div class="grid lg:grid-cols-3 gap-5 mt-5">
+            <div class="lg:col-span-2 panel p-5">
+              <h4 class="text-sm font-medium text-slate-200 mb-4">Funnel · Quartal</h4>
+              <div id="pipeFunnel" class="space-y-1.5">
+                <!-- Rendered by JS -->
               </div>
             </div>
-            <div class="flex gap-4">
-              <div class="font-display text-3xl text-gold-300 w-10 shrink-0">02</div>
-              <div>
-                <h4 class="font-medium text-slate-100">Zuordnung prüfen</h4>
-                <p class="text-sm text-slate-400 mt-1">Wir mappen Ihre Sachkonten auf Abteilungen, Anwälte und Mandanten. Sie bestätigen einmalig — wir lernen es uns.</p>
+            <div class="panel p-5">
+              <div class="flex items-center justify-between mb-3">
+                <h4 class="text-sm font-medium text-slate-200">Heißeste Leads</h4>
+                <span class="text-[11px] text-slate-500">automatisch priorisiert</span>
               </div>
+              <ul class="space-y-3 text-sm">
+                <li class="panel-elevated p-3">
+                  <div class="flex items-center justify-between"><span class="text-slate-100">Apex Quantum Inc.</span><span class="text-[10px] uppercase tracking-wider px-2 py-0.5 rounded-full text-emerald-300 border border-emerald-300/30">Heiß</span></div>
+                  <div class="text-xs text-slate-400 mt-1">USA · Halbleiter · ~ € 240 k erwartet · Empfehlung Meridian</div>
+                </li>
+                <li class="panel-elevated p-3">
+                  <div class="flex items-center justify-between"><span class="text-slate-100">Veritex BioWorks</span><span class="text-[10px] uppercase tracking-wider px-2 py-0.5 rounded-full text-emerald-300 border border-emerald-300/30">Heiß</span></div>
+                  <div class="text-xs text-slate-400 mt-1">CH · Pharma · ~ € 180 k · Bestandsausbau (NovExa)</div>
+                </li>
+                <li class="panel-elevated p-3">
+                  <div class="flex items-center justify-between"><span class="text-slate-100">Tessera Mobility</span><span class="text-[10px] uppercase tracking-wider px-2 py-0.5 rounded-full text-amber-300 border border-amber-300/30">Warm</span></div>
+                  <div class="text-xs text-slate-400 mt-1">NL · Automotive · ~ € 120 k · zweites Schutzrecht</div>
+                </li>
+                <li class="panel-elevated p-3">
+                  <div class="flex items-center justify-between"><span class="text-slate-100">Polaris Materials</span><span class="text-[10px] uppercase tracking-wider px-2 py-0.5 rounded-full text-amber-300 border border-amber-300/30">Warm</span></div>
+                  <div class="text-xs text-slate-400 mt-1">SE · Chemie · ~ € 95 k · Konferenz-Lead</div>
+                </li>
+              </ul>
             </div>
-            <div class="flex gap-4">
-              <div class="font-display text-3xl text-gold-300 w-10 shrink-0">03</div>
-              <div>
-                <h4 class="font-medium text-slate-100">Cockpit nutzen</h4>
-                <p class="text-sm text-slate-400 mt-1">Filter, Drill-Down, PDF-Briefing, monatlicher Re-Import per Knopfdruck.</p>
+          </div>
+        </div>
+      </section>
+
+      <!-- ============ 10 / BUCHUNGS-STREAM ============ -->
+      <section id="s10">
+        <div class="mb-6">
+          <div class="text-[11px] tracking-[0.22em] uppercase text-gold-300/90 font-medium">10 / Buchungen</div>
+          <h2 class="font-display text-2xl sm:text-3xl mt-1">Buchungs-Stream</h2>
+          <p class="text-sm text-slate-400 mt-2 max-w-2xl">
+            Roher Buchungssatz-Strom aus dem Datev-Export. Filterbar nach Konto, Mandant oder Anwalt;
+            jeder Eintrag mit Sollkonto, Habenkonto, Betrag und auflaufendem OPOS-Status.
+          </p>
+        </div>
+
+        <div class="screen p-5 sm:p-7">
+          <div class="flex flex-wrap items-center justify-between gap-3 mb-4">
+            <div class="flex items-center gap-2">
+              <input type="search" placeholder="Buchung suchen…" class="bg-ink-800 border border-white/10 text-sm text-slate-200 rounded-lg px-3 py-1.5 w-56 focus:outline-none focus:border-gold-400/50"/>
+              <select class="bg-ink-800 border border-white/10 text-sm text-slate-200 rounded-lg px-3 py-1.5 focus:outline-none focus:border-gold-400/50">
+                <option>Alle Konten</option><option>8400 Erlöse Patente</option><option>1400 Forderungen</option><option>6020 Personal</option>
+              </select>
+              <select class="bg-ink-800 border border-white/10 text-sm text-slate-200 rounded-lg px-3 py-1.5 focus:outline-none focus:border-gold-400/50">
+                <option>Alle Mandanten</option><option>Helios Pharma AG</option><option>Sumire Robotics</option><option>NovExa Biosciences</option>
+              </select>
+            </div>
+            <div class="flex items-center gap-2 text-xs text-slate-400">
+              <span class="pulse"></span>
+              <span>Live-Sync · zuletzt 14:32 Uhr</span>
+            </div>
+          </div>
+
+          <div class="grid lg:grid-cols-3 gap-5">
+            <div class="lg:col-span-2 panel p-0 overflow-hidden">
+              <table class="w-full text-sm">
+                <thead class="bg-ink-800/70 text-slate-300 text-xs uppercase tracking-wider">
+                  <tr>
+                    <th class="text-left px-3 py-2.5 font-medium">Datum</th>
+                    <th class="text-left px-3 py-2.5 font-medium">Beleg</th>
+                    <th class="text-left px-3 py-2.5 font-medium">Soll</th>
+                    <th class="text-left px-3 py-2.5 font-medium">Haben</th>
+                    <th class="text-left px-3 py-2.5 font-medium">Buchungstext</th>
+                    <th class="text-right px-3 py-2.5 font-medium">Betrag</th>
+                    <th class="text-right px-3 py-2.5 font-medium">Status</th>
+                  </tr>
+                </thead>
+                <tbody class="divide-y divide-white/5 font-mono text-[12.5px]">
+                  <tr><td class="px-3 py-2 text-slate-300">28.06.</td><td class="px-3 py-2 text-slate-400">RG 26-1842</td><td class="px-3 py-2 text-slate-200">10421</td><td class="px-3 py-2 text-gold-200">8400</td><td class="px-3 py-2 font-sans text-slate-300">Helios Pharma · P-2024-0118 · Honorar</td><td class="px-3 py-2 text-right text-slate-100">28 400,00</td><td class="px-3 py-2 text-right text-amber-300">offen 7d</td></tr>
+                  <tr><td class="px-3 py-2 text-slate-300">28.06.</td><td class="px-3 py-2 text-slate-400">EZ 26-0917</td><td class="px-3 py-2 text-slate-200">1200</td><td class="px-3 py-2 text-slate-200">10487</td><td class="px-3 py-2 font-sans text-slate-300">Sumire Robotics · Zahlungseingang</td><td class="px-3 py-2 text-right text-emerald-300">12 850,00</td><td class="px-3 py-2 text-right text-emerald-300">bezahlt</td></tr>
+                  <tr><td class="px-3 py-2 text-slate-300">27.06.</td><td class="px-3 py-2 text-slate-400">RG 26-1841</td><td class="px-3 py-2 text-slate-200">10589</td><td class="px-3 py-2 text-gold-200">8401</td><td class="px-3 py-2 font-sans text-slate-300">Meridian Semicond. · P-2025-0118</td><td class="px-3 py-2 text-right text-slate-100">9 200,00</td><td class="px-3 py-2 text-right text-amber-300">offen 8d</td></tr>
+                  <tr><td class="px-3 py-2 text-slate-300">27.06.</td><td class="px-3 py-2 text-slate-400">LJ 26-06</td><td class="px-3 py-2 text-slate-200">6020</td><td class="px-3 py-2 text-slate-200">1700</td><td class="px-3 py-2 font-sans text-slate-300">Lohnlauf Juni · Anwälte</td><td class="px-3 py-2 text-right text-rose-300">−418 200,00</td><td class="px-3 py-2 text-right text-slate-400">—</td></tr>
+                  <tr><td class="px-3 py-2 text-slate-300">26.06.</td><td class="px-3 py-2 text-slate-400">RG 26-1840</td><td class="px-3 py-2 text-slate-200">10612</td><td class="px-3 py-2 text-gold-200">8420</td><td class="px-3 py-2 font-sans text-slate-300">Kollath &amp; Söhne · M-2025-0044</td><td class="px-3 py-2 text-right text-slate-100">3 400,00</td><td class="px-3 py-2 text-right text-amber-300">offen 9d</td></tr>
+                  <tr><td class="px-3 py-2 text-slate-300">26.06.</td><td class="px-3 py-2 text-slate-400">EZ 26-0916</td><td class="px-3 py-2 text-slate-200">1200</td><td class="px-3 py-2 text-slate-200">10421</td><td class="px-3 py-2 font-sans text-slate-300">Helios Pharma · ZE RG 26-1782</td><td class="px-3 py-2 text-right text-emerald-300">42 100,00</td><td class="px-3 py-2 text-right text-emerald-300">bezahlt</td></tr>
+                  <tr><td class="px-3 py-2 text-slate-300">25.06.</td><td class="px-3 py-2 text-slate-400">RG 26-1839</td><td class="px-3 py-2 text-slate-200">10287</td><td class="px-3 py-2 text-gold-200">8460</td><td class="px-3 py-2 font-sans text-slate-300">Mertens Litigation · L-2025-0007</td><td class="px-3 py-2 text-right text-slate-100">22 000,00</td><td class="px-3 py-2 text-right text-amber-300">offen 10d</td></tr>
+                  <tr><td class="px-3 py-2 text-slate-300">25.06.</td><td class="px-3 py-2 text-slate-400">RG 26-1838</td><td class="px-3 py-2 text-slate-200">10719</td><td class="px-3 py-2 text-gold-200">8400</td><td class="px-3 py-2 font-sans text-slate-300">NovExa Biosciences · P-2025-0044</td><td class="px-3 py-2 text-right text-slate-100">14 600,00</td><td class="px-3 py-2 text-right text-amber-300">offen 10d</td></tr>
+                  <tr><td class="px-3 py-2 text-slate-300">24.06.</td><td class="px-3 py-2 text-slate-400">EZ 26-0915</td><td class="px-3 py-2 text-slate-200">1200</td><td class="px-3 py-2 text-slate-200">10589</td><td class="px-3 py-2 font-sans text-slate-300">Meridian Semicond. · ZE RG 26-1771</td><td class="px-3 py-2 text-right text-emerald-300">18 700,00</td><td class="px-3 py-2 text-right text-emerald-300">bezahlt</td></tr>
+                  <tr><td class="px-3 py-2 text-slate-300">24.06.</td><td class="px-3 py-2 text-slate-400">RG 26-1837</td><td class="px-3 py-2 text-slate-200">10451</td><td class="px-3 py-2 text-gold-200">8475</td><td class="px-3 py-2 font-sans text-slate-300">Hanwool Display · P-2025-0203</td><td class="px-3 py-2 text-right text-slate-100">11 800,00</td><td class="px-3 py-2 text-right text-amber-300">offen 11d</td></tr>
+                  <tr><td class="px-3 py-2 text-slate-300">23.06.</td><td class="px-3 py-2 text-slate-400">EZ 26-0914</td><td class="px-3 py-2 text-slate-200">1200</td><td class="px-3 py-2 text-slate-200">10999</td><td class="px-3 py-2 font-sans text-slate-300">Diverse · ZE Sammelposten</td><td class="px-3 py-2 text-right text-emerald-300">5 240,00</td><td class="px-3 py-2 text-right text-emerald-300">bezahlt</td></tr>
+                  <tr><td class="px-3 py-2 text-slate-300">22.06.</td><td class="px-3 py-2 text-slate-400">RG 26-1836</td><td class="px-3 py-2 text-slate-200">10487</td><td class="px-3 py-2 text-gold-200">8400</td><td class="px-3 py-2 font-sans text-slate-300">Sumire Robotics · P-2024-0331</td><td class="px-3 py-2 text-right text-slate-100">19 200,00</td><td class="px-3 py-2 text-right text-amber-300">offen 13d</td></tr>
+                </tbody>
+              </table>
+            </div>
+            <div class="panel p-5">
+              <h4 class="text-sm font-medium text-slate-200 mb-3">Tagesfluss · 30 Tage</h4>
+              <div id="streamFlow" class="chart w-full h-56"></div>
+              <h4 class="text-sm font-medium text-slate-200 mt-5 mb-3">OPOS-Aging · gesamt</h4>
+              <div id="opsAging" class="chart w-full h-44"></div>
+
+              <div class="mt-5 panel-elevated p-3">
+                <div class="text-[11px] uppercase tracking-wider text-slate-400 mb-1">Auffällig</div>
+                <ul class="text-xs text-slate-300 space-y-1.5">
+                  <li>· Kymera Software: Position 16 142 — 71 Tage offen.</li>
+                  <li>· Konto 8475 unverändert auffällig — Mapping prüfen.</li>
+                </ul>
               </div>
             </div>
           </div>
         </div>
+      </section>
 
-        <div class="lg:col-span-7">
-          <div class="window-chrome rounded-2xl shadow-card overflow-hidden">
-            <div class="flex items-center gap-2 px-4 py-3 border-b border-white/5 bg-ink-900/70">
-              <span class="w-2.5 h-2.5 rounded-full bg-white/15"></span>
-              <span class="w-2.5 h-2.5 rounded-full bg-white/15"></span>
-              <span class="w-2.5 h-2.5 rounded-full bg-white/15"></span>
-              <div class="ml-3 text-[11px] tracking-wider text-slate-400 uppercase">cockpit · Daten-Import</div>
+      <!-- ============ 11 / QUARTALS-BRIEFING ============ -->
+      <section id="s11">
+        <div class="mb-6">
+          <div class="text-[11px] tracking-[0.22em] uppercase text-gold-300/90 font-medium">11 / Briefing</div>
+          <h2 class="font-display text-2xl sm:text-3xl mt-1">Quartals-Briefing</h2>
+          <p class="text-sm text-slate-400 mt-2 max-w-2xl">
+            Automatisch generierter PDF-Bericht für die Gesellschafterversammlung. Vorgefertigte
+            Seitenstruktur mit den Cockpit-Daten des gewählten Zeitraums; Kommentar-Spalten manuell
+            ergänzbar.
+          </p>
+        </div>
+
+        <div class="screen p-5 sm:p-8 bg-ink-950">
+          <div class="flex items-center justify-between mb-5">
+            <div class="flex items-center gap-2">
+              <select class="bg-ink-800 border border-white/10 text-sm text-slate-200 rounded-lg px-3 py-1.5 focus:outline-none focus:border-gold-400/50">
+                <option>Q2 2026</option><option>Q1 2026</option><option>2025 Jahresabschluss</option>
+              </select>
+              <select class="bg-ink-800 border border-white/10 text-sm text-slate-200 rounded-lg px-3 py-1.5 focus:outline-none focus:border-gold-400/50">
+                <option>Vorlage · Standard Partner-Briefing</option>
+                <option>Vorlage · Knapper Executive Summary</option>
+                <option>Vorlage · Vollbericht</option>
+              </select>
             </div>
-            <div class="p-6">
-              <div class="dropzone border-2 border-dashed border-gold-400/30 rounded-xl p-8 text-center">
-                <div class="mx-auto w-14 h-14 grid place-items-center rounded-xl bg-gold-400/10 border border-gold-400/30 text-gold-200">
-                  <svg viewBox="0 0 24 24" class="w-7 h-7" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><path d="m17 8-5-5-5 5"/><path d="M12 3v12"/></svg>
-                </div>
-                <div class="font-display text-lg mt-4 text-slate-100">Datev-Export hier ablegen</div>
-                <div class="text-xs text-slate-400 mt-1">Akzeptiert: Datev XML, CSV (Buchungssätze, Lohnjournal, OPOS) · max. 250 MB</div>
-                <button class="mt-5 inline-flex items-center gap-2 px-4 py-2 rounded-lg border border-gold-400/40 text-gold-100 hover:bg-gold-400/10 transition text-sm">
-                  Dateien auswählen
-                </button>
-              </div>
-              <div class="mt-5 grid sm:grid-cols-3 gap-3 text-sm">
-                <div class="rounded-lg bg-ink-800/70 border border-white/5 px-3 py-3">
-                  <div class="text-[10px] uppercase text-slate-400">Erkannte Sachkonten</div>
-                  <div class="text-slate-100 font-semibold mt-0.5">1 248</div>
-                </div>
-                <div class="rounded-lg bg-ink-800/70 border border-white/5 px-3 py-3">
-                  <div class="text-[10px] uppercase text-slate-400">Buchungssätze</div>
-                  <div class="text-slate-100 font-semibold mt-0.5">87 412</div>
-                </div>
-                <div class="rounded-lg bg-ink-800/70 border border-white/5 px-3 py-3">
-                  <div class="text-[10px] uppercase text-slate-400">Status</div>
-                  <div class="font-semibold mt-0.5 text-emerald-300">Bereit</div>
-                </div>
-              </div>
+            <div class="flex items-center gap-2">
+              <button class="px-3 py-1.5 rounded-md border border-white/10 text-xs text-slate-300 hover:border-gold-400/40">Neu generieren</button>
+              <button class="px-3 py-1.5 rounded-md text-xs font-medium text-ink-950 bg-gradient-to-b from-gold-300 to-gold-500">PDF herunterladen</button>
             </div>
           </div>
-        </div>
-      </div>
-    </div>
-  </section>
 
-  <!-- ============ SECURITY ============ -->
-  <section id="security" class="relative">
-    <div class="max-w-7xl mx-auto px-6 lg:px-10 py-24 lg:py-28">
-      <div class="rounded-3xl border border-gold-400/20 bg-gradient-to-br from-ink-900 to-ink-950 p-10 lg:p-14 bg-grid">
-        <div class="grid lg:grid-cols-12 gap-10 items-start">
-          <div class="lg:col-span-6">
-            <div class="text-[11px] tracking-[0.22em] uppercase text-gold-300/90 font-medium mb-5">Sicherheit &amp; Vertraulichkeit</div>
-            <h2 class="font-display text-3xl sm:text-4xl lg:text-5xl tracking-tight leading-[1.1]">
-              Mandatsgeheimnis ist nicht <span class="text-gold-gradient italic">verhandelbar.</span>
-            </h2>
-            <p class="mt-6 text-slate-300/90 leading-relaxed">
-              KanzleiCockpit wurde von Beginn an für eine Berufsgruppe gebaut, in der Vertraulichkeit
-              kein Feature ist, sondern eine Pflicht. Daten verlassen weder Deutschland noch unsere
-              dedizierte Infrastruktur.
-            </p>
+          <div class="grid md:grid-cols-2 gap-5">
+            <!-- Cover page -->
+            <div class="bg-[#F8F4EA] text-ink-950 rounded-lg shadow-2xl aspect-[1/1.41] p-8 flex flex-col" style="font-family:Inter, sans-serif;">
+              <div class="flex items-center gap-2 text-[10px] tracking-[0.3em] uppercase text-ink-800/80">
+                <span class="grid place-items-center w-6 h-6 rounded bg-ink-950">
+                  <svg viewBox="0 0 24 24" class="w-3.5 h-3.5" fill="none" stroke="#E0BE6D" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 17 L3 7 L8 11 L12 7 L17 13 L21 9"/></svg>
+                </span>
+                KanzleiCockpit · Partner-Briefing
+              </div>
+              <div class="mt-auto">
+                <div class="text-xs text-ink-800/70">Brenner &amp; Voss Partner mbB</div>
+                <div class="font-display text-4xl mt-2 leading-tight">Quartal 2 · 2026</div>
+                <div class="font-display text-base mt-1 italic text-ink-800/80">Wirtschaftliche Lage und Mandantenstruktur</div>
+                <div class="mt-6 grid grid-cols-3 gap-4 border-t border-ink-950/15 pt-4">
+                  <div><div class="text-[10px] uppercase tracking-wider text-ink-800/70">Umsatz</div><div class="font-display text-xl mt-0.5">€ 7,42 M</div></div>
+                  <div><div class="text-[10px] uppercase tracking-wider text-ink-800/70">Marge</div><div class="font-display text-xl mt-0.5">57,1 %</div></div>
+                  <div><div class="text-[10px] uppercase tracking-wider text-ink-800/70">Realization</div><div class="font-display text-xl mt-0.5">87,3 %</div></div>
+                </div>
+                <div class="text-[10px] text-ink-800/60 mt-6">Vertraulich · Nur für Gesellschafter · Stand 30.06.2026</div>
+              </div>
+            </div>
+
+            <!-- Inside page -->
+            <div class="bg-[#F8F4EA] text-ink-950 rounded-lg shadow-2xl aspect-[1/1.41] p-7 flex flex-col" style="font-family:Inter, sans-serif;">
+              <div class="flex items-center justify-between text-[10px] tracking-[0.2em] uppercase text-ink-800/70 border-b border-ink-950/15 pb-2">
+                <span>Q2 2026 · Lage &amp; Trends</span><span>Seite 3 / 14</span>
+              </div>
+
+              <h3 class="font-display text-xl mt-4">1. Wirtschaftliche Entwicklung</h3>
+              <p class="text-[12px] text-ink-800/80 mt-1.5 leading-relaxed">
+                Der Quartalsumsatz liegt mit € 7,42 M um 11,4 % über dem Vorjahresquartal.
+                Treiber sind primär die Patentabteilung (+14,2 %) und die Litigation-Praxis (+18,7 %),
+                während die Verwaltungsumsätze unverändert bleiben.
+              </p>
+
+              <div class="grid grid-cols-3 gap-3 mt-4">
+                <div class="rounded border border-ink-950/12 p-2">
+                  <div class="text-[9px] uppercase tracking-wider text-ink-800/70">Patente</div>
+                  <div class="font-display text-base mt-0.5">€ 4,11 M</div>
+                  <div class="text-[10px] text-emerald-700">+14,2 %</div>
+                </div>
+                <div class="rounded border border-ink-950/12 p-2">
+                  <div class="text-[9px] uppercase tracking-wider text-ink-800/70">Litigation</div>
+                  <div class="font-display text-base mt-0.5">€ 1,02 M</div>
+                  <div class="text-[10px] text-emerald-700">+18,7 %</div>
+                </div>
+                <div class="rounded border border-ink-950/12 p-2">
+                  <div class="text-[9px] uppercase tracking-wider text-ink-800/70">Marken</div>
+                  <div class="font-display text-base mt-0.5">€ 1,52 M</div>
+                  <div class="text-[10px] text-emerald-700">+4,1 %</div>
+                </div>
+              </div>
+
+              <h3 class="font-display text-xl mt-5">2. Beobachtungen</h3>
+              <ul class="text-[12px] text-ink-800/80 mt-1.5 space-y-1 list-disc pl-5">
+                <li>Hanwool Display (KR) entwickelt sich zum Top-10-Mandanten — Aufträge YoY +41 %.</li>
+                <li>Kymera Software (UK) zeigt zweites Quartal in Folge rückläufige Aufträge (−18 % YoY).</li>
+                <li>Auslastung Hofbauer / Dornstetter strukturell &gt; 90 % — Backup-Kapazität bilden.</li>
+              </ul>
+
+              <div class="mt-auto pt-4 border-t border-ink-950/15 flex items-center justify-between text-[10px] text-ink-800/60">
+                <span>Brenner &amp; Voss Partner mbB</span><span>Vertraulich</span>
+              </div>
+            </div>
           </div>
-          <div class="lg:col-span-6">
-            <ul class="space-y-4">
-              <li class="flex gap-3">
-                <span class="mt-0.5 text-gold-300">◆</span>
-                <div>
-                  <div class="font-medium text-slate-100">Hosting ausschließlich in Frankfurt</div>
-                  <div class="text-sm text-slate-400">ISO-27001-zertifiziertes Rechenzentrum, Auftragsverarbeitung nach DSGVO.</div>
-                </div>
-              </li>
-              <li class="flex gap-3">
-                <span class="mt-0.5 text-gold-300">◆</span>
-                <div>
-                  <div class="font-medium text-slate-100">Dedizierte Datenbank je Kanzlei</div>
-                  <div class="text-sm text-slate-400">Keine geteilten Tenants. Keine Daten-Vermischung. Eigene Verschlüsselungs­schlüssel.</div>
-                </div>
-              </li>
-              <li class="flex gap-3">
-                <span class="mt-0.5 text-gold-300">◆</span>
-                <div>
-                  <div class="font-medium text-slate-100">Verschlüsselung at rest &amp; in transit</div>
-                  <div class="text-sm text-slate-400">AES-256 in der Datenbank, TLS 1.3 im Transport. Auf Wunsch HSM-gebunden.</div>
-                </div>
-              </li>
-              <li class="flex gap-3">
-                <span class="mt-0.5 text-gold-300">◆</span>
-                <div>
-                  <div class="font-medium text-slate-100">Kein Training auf Mandantendaten</div>
-                  <div class="text-sm text-slate-400">Ihre Buchhaltung bleibt Ihre Buchhaltung. Niemals Trainingsmaterial. Niemals Drittnutzung.</div>
-                </div>
-              </li>
-              <li class="flex gap-3">
-                <span class="mt-0.5 text-gold-300">◆</span>
-                <div>
-                  <div class="font-medium text-slate-100">Vollständiges Audit-Log</div>
-                  <div class="text-sm text-slate-400">Jeder Zugriff ist nachvollziehbar. Exportierbar für interne Compliance.</div>
-                </div>
-              </li>
-            </ul>
-          </div>
+
+          <p class="text-center text-xs text-slate-500 mt-5">14-seitiger Bericht · Inhalt fest, Kommentare frei editierbar.</p>
         </div>
-      </div>
-    </div>
-  </section>
+      </section>
 
-  <!-- ============ FAQ ============ -->
-  <section id="faq" class="relative">
-    <div class="max-w-4xl mx-auto px-6 lg:px-10 py-24 lg:py-28">
-      <div class="text-center mb-12">
-        <div class="text-[11px] tracking-[0.22em] uppercase text-gold-300/90 font-medium mb-5">Häufige Fragen</div>
-        <h2 class="font-display text-3xl sm:text-4xl tracking-tight">Antworten — bevor Sie fragen.</h2>
-      </div>
-      <div class="divide-y divide-white/5 border-y border-white/5">
-        <details class="group py-5">
-          <summary class="flex items-center justify-between cursor-pointer list-none">
-            <span class="font-medium text-slate-100">Müssen wir Datev verlassen?</span>
-            <span class="text-gold-300 transition group-open:rotate-45 text-xl leading-none">+</span>
-          </summary>
-          <p class="mt-3 text-slate-400 leading-relaxed">Nein. KanzleiCockpit ist explizit als Aufsatz auf Ihre bestehende Datev-Welt konzipiert.
-          Ihre Buchhaltung läuft weiter wie heute — wir interpretieren lediglich, was Sie exportieren.</p>
-        </details>
-        <details class="group py-5">
-          <summary class="flex items-center justify-between cursor-pointer list-none">
-            <span class="font-medium text-slate-100">Wie aufwendig ist die Erstkonfiguration?</span>
-            <span class="text-gold-300 transition group-open:rotate-45 text-xl leading-none">+</span>
-          </summary>
-          <p class="mt-3 text-slate-400 leading-relaxed">In der Regel ein einmaliger Termin von 90 Minuten mit Ihrer Buchhaltung,
-          in dem wir Ihre Kontenstruktur auf das Cockpit-Modell mappen. Danach läuft jeder Re-Import vollautomatisch.</p>
-        </details>
-        <details class="group py-5">
-          <summary class="flex items-center justify-between cursor-pointer list-none">
-            <span class="font-medium text-slate-100">Werden Mandantendaten zur Analyse an Dritte weitergegeben?</span>
-            <span class="text-gold-300 transition group-open:rotate-45 text-xl leading-none">+</span>
-          </summary>
-          <p class="mt-3 text-slate-400 leading-relaxed">Niemals. Ihre Daten verlassen weder Deutschland noch Ihre dedizierte Datenbank.
-          Auch zur Modell-Weiterentwicklung werden ausschließlich anonymisierte Schemata, niemals Inhalte verwendet.</p>
-        </details>
-        <details class="group py-5">
-          <summary class="flex items-center justify-between cursor-pointer list-none">
-            <span class="font-medium text-slate-100">Funktioniert das auch für Anwaltskanzleien außerhalb des Patentrechts?</span>
-            <span class="text-gold-300 transition group-open:rotate-45 text-xl leading-none">+</span>
-          </summary>
-          <p class="mt-3 text-slate-400 leading-relaxed">Technisch ja — die ersten Releases sind jedoch eng auf die Eigenheiten von IP-Kanzleien zugeschnitten
-          (Schutzrechtsklassen, Jahresgebühren, internationale Mandantenstruktur). Weitere Branchen folgen.</p>
-        </details>
-        <details class="group py-5">
-          <summary class="flex items-center justify-between cursor-pointer list-none">
-            <span class="font-medium text-slate-100">Was kostet KanzleiCockpit?</span>
-            <span class="text-gold-300 transition group-open:rotate-45 text-xl leading-none">+</span>
-          </summary>
-          <p class="mt-3 text-slate-400 leading-relaxed">Wir kalkulieren pro Kanzlei individuell, abhängig von Kanzleigröße, Anzahl Berufsträger und
-          gewünschtem Onboarding-Umfang. Sprechen Sie uns an — wir bereiten Ihnen ein klares Angebot vor.</p>
-        </details>
-      </div>
-    </div>
-  </section>
+    </main>
+  </div>
 
-  <!-- ============ CLOSER ============ -->
-  <section class="relative">
-    <div class="max-w-5xl mx-auto px-6 lg:px-10 py-16 lg:py-20 text-center">
-      <h2 class="font-display text-3xl sm:text-4xl lg:text-5xl tracking-tight leading-[1.1]">
-        Ihre Kanzlei produziert <span class="text-slate-400">jeden Tag</span>
-        <br/>
-        die Daten, die sie führen sollten.
-      </h2>
-      <p class="mt-6 text-slate-300/90 max-w-2xl mx-auto">
-        Es wird Zeit, sie endlich zu sehen.
-      </p>
-      <div class="mt-9 flex flex-wrap items-center gap-4 justify-center">
-        <a href="#demo" class="inline-flex items-center gap-2 px-6 py-3.5 rounded-xl bg-gradient-to-b from-gold-300 to-gold-500 text-ink-950 font-semibold shadow-glow-gold hover:from-gold-200 hover:to-gold-400 transition">
-          Demo erkunden
-        </a>
-        <a href="#workflow" class="inline-flex items-center gap-2 px-6 py-3.5 rounded-xl border border-white/15 text-slate-200 hover:border-gold-400/40 hover:text-gold-100 transition">
-          Workflow ansehen
-        </a>
-      </div>
-    </div>
-  </section>
-
-  <!-- ============ FOOTER ============ -->
-  <footer class="border-t border-white/5 bg-ink-975/60">
-    <div class="max-w-7xl mx-auto px-6 lg:px-10 py-12 grid md:grid-cols-4 gap-8 text-sm">
-      <div class="md:col-span-2">
-        <div class="flex items-center gap-2.5">
-          <span class="grid place-items-center w-9 h-9 rounded-lg bg-ink-800 border border-gold-400/30">
-            <svg viewBox="0 0 24 24" class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="color:#E0BE6D">
-              <path d="M3 17 L3 7 L8 11 L12 7 L17 13 L21 9"/>
-              <circle cx="21" cy="9" r="1.6" fill="#E0BE6D"/>
-            </svg>
-          </span>
-          <span class="font-display text-xl tracking-tight">Kanzlei<span class="text-gold-gradient">Cockpit</span></span>
-        </div>
-        <p class="mt-4 text-slate-400 max-w-md leading-relaxed">
-          Das Finanz-Cockpit für moderne Patentanwaltskanzleien. Aus Datev-Export wird Entscheidungsgrundlage.
-        </p>
-      </div>
-      <div>
-        <div class="text-[11px] uppercase tracking-wider text-slate-500 mb-3">Produkt</div>
-        <ul class="space-y-2 text-slate-300">
-          <li><a href="#demo" class="hover:text-gold-200">Live-Demo</a></li>
-          <li><a href="#features" class="hover:text-gold-200">Funktionen</a></li>
-          <li><a href="#workflow" class="hover:text-gold-200">Workflow</a></li>
-          <li><a href="#security" class="hover:text-gold-200">Sicherheit</a></li>
-        </ul>
-      </div>
-      <div>
-        <div class="text-[11px] uppercase tracking-wider text-slate-500 mb-3">Rechtliches</div>
-        <ul class="space-y-2 text-slate-300">
-          <li><a href="#" class="hover:text-gold-200">Impressum</a></li>
-          <li><a href="#" class="hover:text-gold-200">Datenschutz</a></li>
-          <li><a href="#" class="hover:text-gold-200">AGB</a></li>
-          <li><a href="#" class="hover:text-gold-200">DPA</a></li>
-        </ul>
-      </div>
-    </div>
-    <div class="border-t border-white/5">
-      <div class="max-w-7xl mx-auto px-6 lg:px-10 py-5 flex flex-wrap items-center justify-between gap-3 text-xs text-slate-500">
-        <div>© 2026 KanzleiCockpit. Alle Rechte vorbehalten.</div>
-        <div>Made with <span class="text-gold-300">◆</span> in Deutschland.</div>
-      </div>
+  <!-- ============ Footer ============ -->
+  <footer class="border-t border-white/5 mt-12">
+    <div class="max-w-[1400px] mx-auto px-6 lg:px-10 h-12 flex items-center justify-between text-xs text-slate-500">
+      <div>© 2026 KanzleiCockpit · UI-Preview, keine produktive Anwendung</div>
+      <div>Demo-Daten anonymisiert</div>
     </div>
   </footer>
 
-  <!-- ============ APP JS ============ -->
   <script src="./assets/app.js"></script>
 </body>
 </html>
